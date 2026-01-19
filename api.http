@@ -1,0 +1,60 @@
+@baseUrl=http://localhost:8000/api
+
+
+### Register a new user
+POST {{baseUrl}}/auth/sign-up
+Content-Type: application/json
+
+{
+    "username": "lisa_park",
+    "fullName": "Lisa Park",
+    "email": "lahmajidali@gmail.com",
+    "password": "LisaSecure777!"
+}
+
+### Verify email
+POST {{baseUrl}}/auth/verify-email?token=2e8a191ce571f0702f4fa526db8406f84376292cd3529570315422e5cf4130c1&userId=696ddb84fc1680e0fa6313fb
+Content-Type: application/json
+
+
+### Sign in
+POST {{baseUrl}}/auth/sign-in
+Content-Type: application/json
+
+{
+    "email": "lahmajidali@gmail.com",
+    "password": "LisaSecure777!"
+}
+
+### Get current user
+POST {{baseUrl}}/auth/current-user
+
+### Sign out
+POST {{baseUrl}}/auth/sign-out
+
+### Forgot password
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+    "email": "lahmajidali@gmail.com"
+}
+
+### Reset password
+POST {{baseUrl}}/auth/reset-password?token=b4dd0527a0d2b42c960315bfc8759e71511566c5deecb9f575be4d77b42cf906
+Content-Type: application/json
+
+{
+    "newPassword": "NewSecurePassword888!"
+}
+
+
+
+### Update password
+POST {{baseUrl}}/auth/update-password
+Content-Type: application/json
+
+{
+    "currentPassword": "NewSecurePassword888!",
+    "newPassword": "LisaSecure777!"
+}
