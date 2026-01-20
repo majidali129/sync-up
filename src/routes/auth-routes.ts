@@ -42,7 +42,7 @@ router.post('/reset-password', resetPassword)
 router.use(verifyJWT);
 router.post('/update-password', updatePassword)
 router.post('/sign-out', signOut)
-router.post('/current-user', getCurrentUser)
+router.get('/current-user', getCurrentUser)
 
 export { router as authRouter }
 export default router;
