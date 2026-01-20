@@ -6,6 +6,7 @@ import { config } from './config/env';
 import { createServer } from 'http'
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import morgan from 'morgan';
 
 const corsOptions: CorsOptions = {
     methods: ["GET", "POST", "DELETE", "PATCH", "HEAD"],
@@ -47,7 +48,7 @@ const apiLimiter = rateLimit({
 const app = express();
 export const httpServer = createServer(app);
 // ! APP LEVEL MIDDLEWARES
-app.use(cookieParser()).use(express.urlencoded({ extended: true })).use(cors(corsOptions)).use(express.json()).use(helmet())
+app.use(cookieParser()).use(morgan('dev')).use(express.urlencoded({ extended: true })).use(cors(corsOptions)).use(express.json()).use(helmet())
 
 // ! REGISTERING APP ROUTES
 app.use('/api', apiLimiter, appRouter)
