@@ -44,5 +44,5 @@ router.post('/update-password', updatePassword)
 router.post('/sign-out', signOut)
 router.post('/current-user', getCurrentUser)
 
-export { router as authRoutes }
+export { router as authRouter }
 export default router;

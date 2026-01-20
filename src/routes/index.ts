@@ -1,12 +1,14 @@
 import { Router } from "express";
-import { authRoutes } from "./auth-routes";
+import { authRouter } from "./auth-routes";
+import { workspaceRouter } from "./workspace-routes";
 
 
 
 const router = Router()
 
 
-router.use('/auth', authRoutes)
+router.use('/auth', authRouter)
+router.use('/workspaces', workspaceRouter)
 
 
 export { router as appRouter }
