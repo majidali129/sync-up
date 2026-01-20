@@ -12,6 +12,8 @@ export interface IUser {
     emailVerifiedAt?: Date;
     passwordResetToken?: string;
     passwordResetTokenExpires?: Date;
+    passwordResetTokenIssuedAt?: Date;
+    passwordChangedAt?: Date;
     refreshToken?: string;
     isEmailVerified: boolean;
     accountStatus: ACCOUNT_STATUS;
@@ -19,4 +21,5 @@ export interface IUser {
     bannedUntil: Date;
     isOnline: boolean;
     lastSeen: Date;
+    lastLoginAt?: Date;
 }

@@ -132,6 +132,7 @@ class AuthService {
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 12); // DB only
         // update user record
         user.refreshToken = hashedRefreshToken;
+        user.lastLoginAt = new Date();
 
         await user.save({ validateBeforeSave: false });
         // ! IF SIGN IN WITH INVITE
@@ -153,11 +154,9 @@ class AuthService {
 
         user.passwordResetToken = hashedResetToken;
         user.passwordResetTokenExpires = Date.now() + 15 * 60 * 1000; // 15 minutes from now
+        user.passwordResetTokenIssuedAt = new Date();
 
         await user.save({ validateBeforeSave: false });
-
-        // const message = `You requested a password reset. Please click the link below to reset your password:\n\n${resetUrl}\n\nIf you did not request this, please ignore this email.`;
-        // Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}.\nIf you didn't forget your password, please ignore this email!
 
         try {
             await sendResetPasswordEmail(email, resetToken);
@@ -170,6 +169,7 @@ class AuthService {
             console.error('Error sending reset password email:', error);
             user.passwordResetToken = null;
             user.passwordResetTokenExpires = null;
+            user.passwordResetTokenIssuedAt = null;
             await user.save({ validateBeforeSave: false });
 
             throw new ApiError(500, 'There was an error sending the email. Try again later.');
@@ -180,11 +180,23 @@ class AuthService {
 
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-        const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetTokenExpires: { $gt: Date.now() } }).select('password _id passwordResetToken passwordResetTokenExpires').exec();
+        const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetTokenExpires: { $gt: Date.now() } }).select('password _id passwordResetToken passwordResetTokenExpires passwordChangedAt passwordResetTokenIssuedAt').exec();
         if (!user) throw new ApiError(404, 'Token is invalid or has expired');
+
+        // check if current password is changed after token issued
+        const isPasswordChangedAfterTokenIssue = user.passwordChangedAt && (
+            user.passwordChangedAt.getTime() > user.passwordResetTokenIssuedAt.getTime()
+        )
+
+        if (isPasswordChangedAfterTokenIssue) {
+            throw new ApiError(400, 'Password has been changed recently. Please request a new password reset.');
+        }
+
         user.password = await bcrypt.hash(newPassword, 12);
+        user.passwordChangedAt = new Date();
         user.passwordResetToken = null;
         user.passwordResetTokenExpires = null;
+        user.passwordResetTokenIssuedAt = null;
         await user.save({ validateBeforeSave: false });
 
         return {
@@ -202,6 +214,7 @@ class AuthService {
 
         const hashedNewPassword = await bcrypt.hash(newPassword, 12);
         user.password = hashedNewPassword;
+        user.passwordChangedAt = new Date();
 
         await user.save({ validateBeforeSave: false });
     }

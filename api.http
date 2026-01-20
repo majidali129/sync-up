@@ -41,7 +41,7 @@ Content-Type: application/json
 }
 
 ### Reset password
-POST {{baseUrl}}/auth/reset-password?token=b4dd0527a0d2b42c960315bfc8759e71511566c5deecb9f575be4d77b42cf906
+POST {{baseUrl}}/auth/reset-password?token=bcbe451415960183575ce69cb65c4ad5ab61c4cde8fa892ba6a8630212fb14de
 Content-Type: application/json
 
 {

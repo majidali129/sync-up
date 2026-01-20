@@ -66,6 +66,14 @@ const userSchema = new Schema<UserDocument>({
 		type: Number,
 		default: null
 	},
+	passwordResetTokenIssuedAt: {
+		type: Date,
+		default: null
+	},
+	passwordChangedAt: {
+		type: Date,
+		default: null
+	},
 	isEmailVerified: {
 		type: Boolean,
 		default: false
@@ -91,6 +99,10 @@ const userSchema = new Schema<UserDocument>({
 		default: false
 	},
 	lastSeen: {
+		type: Date,
+		default: null
+	},
+	lastLoginAt: {
 		type: Date,
 		default: null
 	}
