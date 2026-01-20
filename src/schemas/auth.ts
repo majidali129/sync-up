@@ -8,42 +8,37 @@ export const signUpSchema = z.object({
 		.max(30, "Username cannot exceed 30 characters")
 		.regex(/^[a-z0-9_-]+$/, "Username can only contain lowercase letters, numbers, underscores, and hyphens")
 		.toLowerCase(),
-	email: z
-		.string()
-		.email("Please provide a valid email address")
-		.toLowerCase(),
-	password: z
-		.string()
-		.min(8, "Password must be at least 8 characters")
-		.max(128, "Password cannot exceed 128 characters")
-		.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
 	fullName: z
 		.string()
 		.min(2, "Full name must be at least 2 characters")
 		.max(100, "Full name cannot exceed 100 characters")
 		.trim(),
-	timezone: z.string().optional(),
-	jobTitle: z.string().max(100, "Job title cannot exceed 100 characters").optional(),
-	department: z.string().max(100, "Department cannot exceed 100 characters").optional(),
-	phoneNumber: z.string().regex(/^\+?[\d\s-()]+$/, "Please provide a valid phone number").optional()
+	email: z
+		.email("Please provide a valid email address")
+		.toLowerCase().refine(email => email.length > 0, { message: "Email is required" }),
+	password: z
+		.string()
+		.min(8, "Password must be at least 8 characters")
+		.max(128, "Password cannot exceed 128 characters")
+		.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
 });
 
 // Sign In Schema
 export const signInSchema = z.object({
-	identifier: z
+	email: z
 		.string()
 		.min(1, "Email or username is required"),
 	password: z
 		.string()
-		.min(1, "Password is required")
+		.min(1, "Password is required"),
+	inviteToken: z.string().optional()
 });
 
 // Forgot Password Schema
 export const forgotPasswordSchema = z.object({
 	email: z
-		.string()
-		.email("Please provide a valid email address")
-		.toLowerCase()
+		.string().min(1, "Email is required")
+		.toLowerCase().trim()
 });
 
 // Reset Password Schema
@@ -67,7 +62,6 @@ export const updatePasswordSchema = z.object({
 		.string()
 		.min(8, "New password must be at least 8 characters")
 		.max(128, "New password cannot exceed 128 characters")
-		.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "New password must contain at least one uppercase letter, one lowercase letter, and one number")
 }).refine((data) => data.currentPassword !== data.newPassword, {
 	message: "New password must be different from current password",
 	path: ["newPassword"]
@@ -77,7 +71,10 @@ export const updatePasswordSchema = z.object({
 export const verifyEmailSchema = z.object({
 	token: z
 		.string()
-		.min(1, "Verification token is required")
+		.min(1, "Verification token is required"),
+	userId: z
+		.string()
+		.min(1, "User ID is required")
 });
 
 // Refresh Token Schema

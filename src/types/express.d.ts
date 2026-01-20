@@ -9,7 +9,7 @@ declare global {
             user: {
                 id: string;
                 username: string;
-                role: USER_ROLE
+                email: string
             }
         }
     }
