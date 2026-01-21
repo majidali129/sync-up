@@ -34,3 +34,16 @@ export interface IWorkspaceMember {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export type INVITE_STATUS = 'pending' | 'accepted' | 'declined' | 'expired';
+export interface IWorkspaceInvite {
+    workspaceId: ObjectId;
+    invitedBy: ObjectId;
+    role: USER_ROLE;
+    email: string;
+    token: string;
+    tokenExpiresAt: number;
+    status: INVITE_STATUS;
+    createdAt: Date;
+    updatedAt: Date;
+}

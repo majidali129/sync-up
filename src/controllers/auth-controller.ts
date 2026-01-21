@@ -16,7 +16,6 @@ export const signUp = asyncHandler(async (req, res) => {
 
 export const verifyEmail = asyncHandler(async (req, res) => {
     const { token, userId } = verifyEmailSchema.parse({ token: req.query.token, userId: req.query.userId });
-    console.log(token);
 
     const result = await authService.verifyEmail(token, userId);
     return apiResponse(res, result.status, result.message)

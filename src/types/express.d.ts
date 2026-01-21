@@ -9,7 +9,8 @@ declare global {
             user: {
                 id: string;
                 username: string;
-                email: string
+                email: string;
+                fullName: string;
             }
         }
     }

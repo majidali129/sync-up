@@ -22,7 +22,7 @@ const workspaceMemberSchema = new Schema<WorkspaceMemberDocument>({
     },
     joinedAt: {
         type: Date,
-        default: Date.now
+        default: new Date()
     },
 }, { timestamps: true });
 
