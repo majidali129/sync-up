@@ -39,7 +39,7 @@ export type INVITE_STATUS = 'pending' | 'accepted' | 'declined' | 'expired';
 export interface IWorkspaceInvite {
     workspaceId: ObjectId;
     invitedBy: ObjectId;
-    role: USER_ROLE;
+    role: 'admin' | 'member' | 'viewer'
     email: string;
     token: string;
     tokenExpiresAt: number;

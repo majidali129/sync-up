@@ -1,0 +1,302 @@
+[
+    {
+        "_id": "6560000000000000000000a1",
+        "name": "Acme Product Hub",
+        "slug": "acme-product-hub",
+        "description": "Core product planning and delivery",
+        "icon": "🚀",
+        "ownerId": "697100b7d4da7470b3ae6e17",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 50
+        }
+    },
+    {
+        "_id": "6560000000000000000000a2",
+        "name": "Design System Guild",
+        "slug": "design-system-guild",
+        "description": "Shared components and visual language",
+        "icon": "🎨",
+        "ownerId": "697100b7d4da7470b3ae6e18",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 30
+        }
+    },
+    {
+        "_id": "6560000000000000000000a3",
+        "name": "Data & Analytics",
+        "slug": "data-analytics",
+        "description": "Analytics pipelines and dashboards",
+        "icon": "📊",
+        "ownerId": "697100b7d4da7470b3ae6e19",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 40
+        }
+    },
+    {
+        "_id": "6560000000000000000000a4",
+        "name": "Mobile App Squad",
+        "slug": "mobile-app-squad",
+        "description": "iOS and Android feature delivery",
+        "icon": "📱",
+        "ownerId": "697100b7d4da7470b3ae6e1a",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 25
+        }
+    },
+    {
+        "_id": "6560000000000000000000a5",
+        "name": "Growth Experiments",
+        "slug": "growth-experiments",
+        "description": "A/B tests and activation funnels",
+        "icon": "📈",
+        "ownerId": "697100b7d4da7470b3ae6e1d",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "private",
+            "requireApproval": false,
+            "maxMembers": 35
+        }
+    },
+    {
+        "_id": "6560000000000000000000a6",
+        "name": "Customer Success Ops",
+        "slug": "customer-success-ops",
+        "description": "Playbooks and retention workflows",
+        "icon": "🤝",
+        "ownerId": "697100b7d4da7470b3ae6e1e",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 20
+        }
+    },
+    {
+        "_id": "6560000000000000000000a7",
+        "name": "Security & Compliance",
+        "slug": "security-compliance",
+        "description": "Audits, policies, and controls",
+        "icon": "🛡️",
+        "ownerId": "697100b7d4da7470b3ae6e1f",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 15
+        }
+    },
+    {
+        "_id": "6560000000000000000000a8",
+        "name": "Infra & Platform",
+        "slug": "infra-platform",
+        "description": "Cloud, CI/CD, and observability",
+        "icon": "☁️",
+        "ownerId": "697100b7d4da7470b3ae6e20",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 25
+        }
+    },
+    {
+        "_id": "6560000000000000000000a9",
+        "name": "Web Frontend Guild",
+        "slug": "web-frontend-guild",
+        "description": "SPA, SSR, and performance",
+        "icon": "🌐",
+        "ownerId": "697100b7d4da7470b3ae6e21",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "public",
+            "requireApproval": false,
+            "maxMembers": 60
+        }
+    },
+    {
+        "_id": "6560000000000000000000aa",
+        "name": "Backend Services",
+        "slug": "backend-services",
+        "description": "APIs, queues, and storage",
+        "icon": "🧰",
+        "ownerId": "697100b7d4da7470b3ae6e22",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 50
+        }
+    },
+    {
+        "_id": "6560000000000000000000ab",
+        "name": "ML Innovation Lab",
+        "slug": "ml-innovation-lab",
+        "description": "Prototypes and model serving",
+        "icon": "🧠",
+        "ownerId": "697100b7d4da7470b3ae6e23",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 18
+        }
+    },
+    {
+        "_id": "6560000000000000000000ac",
+        "name": "Content & Docs",
+        "slug": "content-docs",
+        "description": "Product docs and release notes",
+        "icon": "📚",
+        "ownerId": "697100b7d4da7470b3ae6e24",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "public",
+            "requireApproval": false,
+            "maxMembers": 40
+        }
+    },
+    {
+        "_id": "6560000000000000000000ad",
+        "name": "QA & Release",
+        "slug": "qa-release",
+        "description": "Test plans and release gates",
+        "icon": "✅",
+        "ownerId": "697100b7d4da7470b3ae6e25",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 25
+        }
+    },
+    {
+        "_id": "6560000000000000000000ae",
+        "name": "Partner Integrations",
+        "slug": "partner-integrations",
+        "description": "Third-party APIs and certifications",
+        "icon": "🔗",
+        "ownerId": "697100b7d4da7470b3ae6e1c",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 30
+        }
+    },
+    {
+        "_id": "6560000000000000000000af",
+        "name": "Internal Tools",
+        "slug": "internal-tools",
+        "description": "Admin consoles and back-office",
+        "icon": "🛠️",
+        "ownerId": "697100b7d4da7470b3ae6e1b",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 30
+        }
+    },
+    {
+        "_id": "6560000000000000000000b0",
+        "name": "Support Operations",
+        "slug": "support-operations",
+        "description": "Ticket flows and SLAs",
+        "icon": "🎧",
+        "ownerId": "697100b7d4da7470b3ae6e17",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "public",
+            "requireApproval": false,
+            "maxMembers": 70
+        }
+    },
+    {
+        "_id": "6560000000000000000000b1",
+        "name": "Billing & Revenue",
+        "slug": "billing-revenue",
+        "description": "Plans, invoices, dunning",
+        "icon": "💳",
+        "ownerId": "697100b7d4da7470b3ae6e18",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 15
+        }
+    },
+    {
+        "_id": "6560000000000000000000b2",
+        "name": "Community Programs",
+        "slug": "community-programs",
+        "description": "Events, ambassadors, feedback",
+        "icon": "🧑‍🤝‍🧑",
+        "ownerId": "697100b7d4da7470b3ae6e19",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "public",
+            "requireApproval": false,
+            "maxMembers": 80
+        }
+    },
+    {
+        "_id": "6560000000000000000000b3",
+        "name": "Research & Insights",
+        "slug": "research-insights",
+        "description": "User studies and findings",
+        "icon": "🔬",
+        "ownerId": "697100b7d4da7470b3ae6e1a",
+        "settings": {
+            "theme": "dark",
+            "notifyOwnerOnMemberJoin": false,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 20
+        }
+    },
+    {
+        "_id": "6560000000000000000000b4",
+        "name": "Localization",
+        "slug": "localization",
+        "description": "i18n, l10n, and translations",
+        "icon": "🌎",
+        "ownerId": "697100b7d4da7470b3ae6e1d",
+        "settings": {
+            "theme": "light",
+            "notifyOwnerOnMemberJoin": true,
+            "visibility": "private",
+            "requireApproval": true,
+            "maxMembers": 25
+        }
+    }
+]

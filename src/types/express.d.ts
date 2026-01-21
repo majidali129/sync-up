@@ -11,6 +11,7 @@ declare global {
                 username: string;
                 email: string;
                 fullName: string;
+                role?: USER_ROLE
             }
         }
     }

@@ -1,0 +1,122 @@
+[
+    {
+        "username": "john_doe",
+        "fullName": "John Doe",
+        "email": "john.doe@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-15T10:30:00.000Z"
+    },
+    {
+        "username": "sarah_wilson",
+        "fullName": "Sarah Wilson",
+        "email": "sarah.wilson@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-16T14:20:00.000Z"
+    },
+    {
+        "username": "majid_ali",
+        "fullName": "Majid Ali",
+        "email": "majid.ali@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-17T09:45:00.000Z"
+    },
+    {
+        "username": "emily_brown",
+        "fullName": "Emily Brown",
+        "email": "emily.brown@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-18T16:10:00.000Z"
+    },
+    {
+        "username": "alex_martinez",
+        "fullName": "Alex Martinez",
+        "email": "alex.martinez@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-19T11:30:00.000Z"
+    },
+    {
+        "username": "lisa_anderson",
+        "fullName": "Lisa Anderson",
+        "email": "lisa.anderson@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-20T08:15:00.000Z"
+    },
+    {
+        "username": "david_kumar",
+        "fullName": "David Kumar",
+        "email": "david.kumar@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-21T13:40:00.000Z"
+    },
+    {
+        "username": "rachel_taylor",
+        "fullName": "Rachel Taylor",
+        "email": "rachel.taylor@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-22T10:25:00.000Z"
+    },
+    {
+        "username": "james_nguyen",
+        "fullName": "James Nguyen",
+        "email": "james.nguyen@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-23T15:50:00.000Z"
+    },
+    {
+        "username": "sophia_garcia",
+        "fullName": "Sophia Garcia",
+        "email": "sophia.garcia@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-24T12:05:00.000Z"
+    },
+    {
+        "username": "ryan_patel",
+        "fullName": "Ryan Patel",
+        "email": "ryan.patel@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-25T09:30:00.000Z"
+    },
+    {
+        "username": "olivia_lee",
+        "fullName": "Olivia Lee",
+        "email": "olivia.lee@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-26T14:45:00.000Z"
+    },
+    {
+        "username": "daniel_rodriguez",
+        "fullName": "Daniel Rodriguez",
+        "email": "daniel.rodriguez@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-27T11:20:00.000Z"
+    },
+    {
+        "username": "emma_white",
+        "fullName": "Emma White",
+        "email": "emma.white@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-28T16:35:00.000Z"
+    },
+    {
+        "username": "kevin_johnson",
+        "fullName": "Kevin Johnson",
+        "email": "kevin.johnson@example.com",
+        "password": "SecurePass123!",
+        "isEmailVerified": true,
+        "emailVerifiedAt": "2025-12-29T10:10:00.000Z"
+    }
+]
