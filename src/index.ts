@@ -1,5 +1,5 @@
 import { config } from "./config/env"
-import { connectDB, dbInstance } from "./lib/connect-db";
+import { connectDB, dbInstance } from "./db/connect-db";
 import { httpServer } from "./server"
 
 

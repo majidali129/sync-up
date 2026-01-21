@@ -1,0 +1,587 @@
+[
+    {
+        "_id": "6563000000000000000000f1",
+        "name": "Mobile App v2.0",
+        "description": "Complete redesign of iOS and Android applications with new UI framework",
+        "workspaceId": "6560000000000000000000a1",
+        "createdBy": "697100b7d4da7470b3ae6e17",
+        "members": [
+            "697100b7d4da7470b3ae6e18",
+            "697100b7d4da7470b3ae6e19"
+        ],
+        "icon": "📱",
+        "color": "#FF6B6B",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-15",
+        "endDate": "2026-04-30",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "mobile",
+            "ui",
+            "redesign"
+        ],
+        "createdAt": "2025-12-01T08:00:00.000Z",
+        "updatedAt": "2025-12-01T08:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f2",
+        "name": "Component Library",
+        "description": "Unified design system with reusable components for all platforms",
+        "workspaceId": "6560000000000000000000a2",
+        "createdBy": "697100b7d4da7470b3ae6e18",
+        "members": [
+            "697100b7d4da7470b3ae6e19",
+            "697100b7d4da7470b3ae6e1b"
+        ],
+        "icon": "🎨",
+        "color": "#4ECDC4",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-10",
+        "endDate": "2026-03-15",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "design",
+            "components",
+            "system"
+        ],
+        "createdAt": "2025-12-02T09:00:00.000Z",
+        "updatedAt": "2025-12-02T09:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f3",
+        "name": "Data Warehouse Migration",
+        "description": "Migrate analytics to cloud-based data warehouse with new ETL pipelines",
+        "workspaceId": "6560000000000000000000a3",
+        "createdBy": "697100b7d4da7470b3ae6e19",
+        "members": [
+            "697100b7d4da7470b3ae6e1c",
+            "697100b7d4da7470b3ae6e1d"
+        ],
+        "icon": "📊",
+        "color": "#95E1D3",
+        "status": "on-hold",
+        "visibility": "private",
+        "startDate": "2026-02-01",
+        "endDate": "2026-05-31",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "data",
+            "cloud",
+            "infrastructure"
+        ],
+        "createdAt": "2025-12-03T10:00:00.000Z",
+        "updatedAt": "2025-12-03T10:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f4",
+        "name": "iOS Native Features",
+        "description": "Implement native iOS APIs for enhanced performance and user experience",
+        "workspaceId": "6560000000000000000000a4",
+        "createdBy": "697100b7d4da7470b3ae6e1a",
+        "members": [
+            "697100b7d4da7470b3ae6e1e",
+            "697100b7d4da7470b3ae6e1f"
+        ],
+        "icon": "🍎",
+        "color": "#FFD93D",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-20",
+        "endDate": "2026-03-20",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "ios",
+            "native",
+            "performance"
+        ],
+        "createdAt": "2025-12-04T11:00:00.000Z",
+        "updatedAt": "2025-12-04T11:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f5",
+        "name": "Growth Funnel Optimization",
+        "description": "A/B test and optimize user onboarding and activation funnels",
+        "workspaceId": "6560000000000000000000a5",
+        "createdBy": "697100b7d4da7470b3ae6e1d",
+        "members": [
+            "697100b7d4da7470b3ae6e20",
+            "697100b7d4da7470b3ae6e21"
+        ],
+        "icon": "📈",
+        "color": "#6BCB77",
+        "status": "active",
+        "visibility": "public",
+        "startDate": "2026-01-05",
+        "endDate": "2026-02-28",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "growth",
+            "analytics",
+            "optimization"
+        ],
+        "createdAt": "2025-12-05T12:00:00.000Z",
+        "updatedAt": "2025-12-05T12:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f6",
+        "name": "Customer Health Monitoring",
+        "description": "Build customer health scoring and proactive engagement workflows",
+        "workspaceId": "6560000000000000000000a6",
+        "createdBy": "697100b7d4da7470b3ae6e1e",
+        "members": [
+            "697100b7d4da7470b3ae6e22"
+        ],
+        "icon": "❤️",
+        "color": "#FF6B9D",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-25",
+        "endDate": "2026-04-10",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "customer-success",
+            "retention",
+            "health"
+        ],
+        "createdAt": "2025-12-06T13:00:00.000Z",
+        "updatedAt": "2025-12-06T13:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f7",
+        "name": "Compliance Audit Framework",
+        "description": "Implement SOC2 and GDPR compliance frameworks and automated audits",
+        "workspaceId": "6560000000000000000000a7",
+        "createdBy": "697100b7d4da7470b3ae6e1f",
+        "members": [
+            "697100b7d4da7470b3ae6e23"
+        ],
+        "icon": "🛡️",
+        "color": "#2D3436",
+        "status": "on-hold",
+        "visibility": "private",
+        "startDate": "2026-02-01",
+        "endDate": "2026-06-30",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "security",
+            "compliance",
+            "audit"
+        ],
+        "createdAt": "2025-12-07T14:00:00.000Z",
+        "updatedAt": "2025-12-07T14:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f8",
+        "name": "Kubernetes Migration",
+        "description": "Migrate infrastructure from VMs to Kubernetes for better scalability",
+        "workspaceId": "6560000000000000000000a8",
+        "createdBy": "697100b7d4da7470b3ae6e20",
+        "members": [
+            "697100b7d4da7470b3ae6e24"
+        ],
+        "icon": "☁️",
+        "color": "#326CE5",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-15",
+        "endDate": "2026-05-15",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "kubernetes",
+            "infrastructure",
+            "devops"
+        ],
+        "createdAt": "2025-12-08T15:00:00.000Z",
+        "updatedAt": "2025-12-08T15:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000f9",
+        "name": "React Performance Optimization",
+        "description": "Optimize React bundle size and implement code splitting strategies",
+        "workspaceId": "6560000000000000000000a9",
+        "createdBy": "697100b7d4da7470b3ae6e21",
+        "members": [
+            "697100b7d4da7470b3ae6e25"
+        ],
+        "icon": "⚛️",
+        "color": "#61DAFB",
+        "status": "completed",
+        "visibility": "public",
+        "startDate": "2025-11-01",
+        "endDate": "2025-12-15",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "frontend",
+            "performance",
+            "react"
+        ],
+        "createdAt": "2025-12-09T16:00:00.000Z",
+        "updatedAt": "2025-12-09T16:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000fa",
+        "name": "GraphQL API Redesign",
+        "description": "Redesign GraphQL schema for better performance and developer experience",
+        "workspaceId": "6560000000000000000000aa",
+        "createdBy": "697100b7d4da7470b3ae6e22",
+        "members": [
+            "697100b7d4da7470b3ae6e17"
+        ],
+        "icon": "🧰",
+        "color": "#E535AB",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-10",
+        "endDate": "2026-04-20",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "backend",
+            "graphql",
+            "api"
+        ],
+        "createdAt": "2025-12-10T17:00:00.000Z",
+        "updatedAt": "2025-12-10T17:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000fb",
+        "name": "ML Model Pipeline",
+        "description": "Build and deploy ML models for recommendation engine using TensorFlow",
+        "workspaceId": "6560000000000000000000ab",
+        "createdBy": "697100b7d4da7470b3ae6e23",
+        "members": [
+            "697100b7d4da7470b3ae6e18"
+        ],
+        "icon": "🧠",
+        "color": "#FF7F50",
+        "status": "on-hold",
+        "visibility": "private",
+        "startDate": "2026-02-15",
+        "endDate": "2026-06-30",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "ml",
+            "ai",
+            "data-science"
+        ],
+        "createdAt": "2025-12-11T18:00:00.000Z",
+        "updatedAt": "2025-12-11T18:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000fc",
+        "name": "Product Documentation Overhaul",
+        "description": "Completely rewrite product docs with interactive examples and video tutorials",
+        "workspaceId": "6560000000000000000000ac",
+        "createdBy": "697100b7d4da7470b3ae6e24",
+        "members": [
+            "697100b7d4da7470b3ae6e19"
+        ],
+        "icon": "📚",
+        "color": "#F0AD4E",
+        "status": "active",
+        "visibility": "public",
+        "startDate": "2026-01-20",
+        "endDate": "2026-03-31",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "documentation",
+            "content",
+            "education"
+        ],
+        "createdAt": "2025-12-12T19:00:00.000Z",
+        "updatedAt": "2025-12-12T19:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000fd",
+        "name": "Release Management Automation",
+        "description": "Automate release process with canary deployments and automated rollbacks",
+        "workspaceId": "6560000000000000000000ad",
+        "createdBy": "697100b7d4da7470b3ae6e25",
+        "members": [
+            "697100b7d4da7470b3ae6e1a"
+        ],
+        "icon": "✅",
+        "color": "#5CB85C",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-08",
+        "endDate": "2026-03-08",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "devops",
+            "release",
+            "automation"
+        ],
+        "createdAt": "2025-12-13T20:00:00.000Z",
+        "updatedAt": "2025-12-13T20:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000fe",
+        "name": "Payment Gateway Integration",
+        "description": "Integrate Stripe and PayPal for multi-currency payments",
+        "workspaceId": "6560000000000000000000ae",
+        "createdBy": "697100b7d4da7470b3ae6e1c",
+        "members": [
+            "697100b7d4da7470b3ae6e1b"
+        ],
+        "icon": "💳",
+        "color": "#0066CC",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-12",
+        "endDate": "2026-02-28",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "payments",
+            "billing",
+            "integration"
+        ],
+        "createdAt": "2025-12-14T21:00:00.000Z",
+        "updatedAt": "2025-12-14T21:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000000ff",
+        "name": "Admin Portal",
+        "description": "Build comprehensive admin dashboard for system configuration and monitoring",
+        "workspaceId": "6560000000000000000000af",
+        "createdBy": "697100b7d4da7470b3ae6e1b",
+        "members": [
+            "697100b7d4da7470b3ae6e1c"
+        ],
+        "icon": "🛠️",
+        "color": "#6C757D",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-18",
+        "endDate": "2026-04-30",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "admin",
+            "dashboard",
+            "management"
+        ],
+        "createdAt": "2025-12-15T22:00:00.000Z",
+        "updatedAt": "2025-12-15T22:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000001f0",
+        "name": "Support Ticketing System",
+        "description": "Implement AI-powered support ticket routing and auto-response system",
+        "workspaceId": "6560000000000000000000b0",
+        "createdBy": "697100b7d4da7470b3ae6e17",
+        "members": [
+            "697100b7d4da7470b3ae6e1d"
+        ],
+        "icon": "🎧",
+        "color": "#FF9999",
+        "status": "on-hold",
+        "visibility": "public",
+        "startDate": "2026-02-01",
+        "endDate": "2026-05-15",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "support",
+            "automation",
+            "ai"
+        ],
+        "createdAt": "2025-12-16T08:00:00.000Z",
+        "updatedAt": "2025-12-16T08:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000001f1",
+        "name": "SaaS Metering & Quotas",
+        "description": "Implement usage-based metering and quota enforcement for SaaS product",
+        "workspaceId": "6560000000000000000000b1",
+        "createdBy": "697100b7d4da7470b3ae6e18",
+        "members": [
+            "697100b7d4da7470b3ae6e1e"
+        ],
+        "icon": "💰",
+        "color": "#CC0000",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-22",
+        "endDate": "2026-04-15",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "billing",
+            "quotas",
+            "metering"
+        ],
+        "createdAt": "2025-12-17T09:00:00.000Z",
+        "updatedAt": "2025-12-17T09:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000001f2",
+        "name": "Community Features",
+        "description": "Launch user forums, Q&A section, and community voting system",
+        "workspaceId": "6560000000000000000000b2",
+        "createdBy": "697100b7d4da7470b3ae6e19",
+        "members": [
+            "697100b7d4da7470b3ae6e1f"
+        ],
+        "icon": "👥",
+        "color": "#3498DB",
+        "status": "active",
+        "visibility": "public",
+        "startDate": "2026-01-30",
+        "endDate": "2026-05-30",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "community",
+            "engagement",
+            "social"
+        ],
+        "createdAt": "2025-12-18T10:00:00.000Z",
+        "updatedAt": "2025-12-18T10:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000001f3",
+        "name": "User Research & Insights",
+        "description": "Conduct comprehensive user research and build insights dashboard",
+        "workspaceId": "6560000000000000000000b3",
+        "createdBy": "697100b7d4da7470b3ae6e1a",
+        "members": [
+            "697100b7d4da7470b3ae6e20"
+        ],
+        "icon": "🔬",
+        "color": "#9B59B6",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-01-05",
+        "endDate": "2026-03-05",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "research",
+            "insights",
+            "ux"
+        ],
+        "createdAt": "2025-12-19T11:00:00.000Z",
+        "updatedAt": "2025-12-19T11:00:00.000Z"
+    },
+    {
+        "_id": "6563000000000000000001f4",
+        "name": "Multi-language Support",
+        "description": "Add i18n support for 15+ languages with RTL language support",
+        "workspaceId": "6560000000000000000000b4",
+        "createdBy": "697100b7d4da7470b3ae6e1d",
+        "members": [
+            "697100b7d4da7470b3ae6e21"
+        ],
+        "icon": "🌎",
+        "color": "#1ABC9C",
+        "status": "active",
+        "visibility": "private",
+        "startDate": "2026-02-10",
+        "endDate": "2026-05-10",
+        "stats": {
+            "totalTasks": 0,
+            "completedTasks": 0,
+            "inProgressTasks": 0,
+            "overdueTasks": 0
+        },
+        "tags": [
+            "localization",
+            "i18n",
+            "languages"
+        ],
+        "createdAt": "2025-12-20T12:00:00.000Z",
+        "updatedAt": "2025-12-20T12:00:00.000Z"
+    }
+]
