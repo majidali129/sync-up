@@ -2,10 +2,13 @@ import { addProjectMember, createProject, deleteProject, getProjectDetails, getP
 import { verifyJWT } from "@/middlewares/verify-jwt";
 import { verifyWorkspaceOwnerShip } from "@/middlewares/verify-workspace-ownership";
 import { Router } from "express";
+import { taskRouter } from "./task-routes";
 
 
 
 const router = Router({ mergeParams: true });
+// All routes will mount under /workspaces/:workspaceId/projects
+router.use('/:projectId/tasks', taskRouter) // Mount task routes under project routes i.e. /projects/:id/tasks
 
 router.use(verifyJWT);
 

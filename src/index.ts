@@ -10,8 +10,6 @@ const startServer = () => {
 };
 
 try {
-    console.log('DB Obj:', dbInstance);
-
     await connectDB();
     startServer();
 } catch (error) {
