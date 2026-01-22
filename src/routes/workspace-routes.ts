@@ -7,8 +7,8 @@ import { projectRouter } from "./project-routes";
 
 const router = Router()
 
-router.use('/:workspaceId/invites', inviteRouter)
-router.use('/:workspaceId/projects', projectRouter)
+router.use('/:workspaceId/invites', inviteRouter) // Mount invite routes under workspace routes i.e. /workspaces/:workspaceId/invites
+router.use('/:workspaceId/projects', projectRouter) // Mount project routes under workspace routes i.e. /workspaces/:workspaceId/projects
 
 router.use(verifyJWT);
 router.route('/').post(createWorkspace).get(getAllWorkspaces);

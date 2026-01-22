@@ -30,7 +30,6 @@ export const updateProjectStatusSchema = z.object({
 
 export const addMemberToProjectSchema = z.object({
     memberId: z.string().min(1, 'Member ID is required').trim(),
-    role: z.enum(['member', 'viewer'], 'Role must be one of member, or viewer'),
 })
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;

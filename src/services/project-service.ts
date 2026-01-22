@@ -61,7 +61,7 @@ class ProjectService {
     async getProjectDetails(ctx: ProjectContext) {
         const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).populate({
             path: 'createdBy',
-            select: 'name email profilePhoto _id'
+            select: 'username email profilePhoto _id'
         }).lean().exec();
 
         if (!project) {
