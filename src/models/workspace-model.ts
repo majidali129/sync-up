@@ -44,6 +44,7 @@ const workspaceSchema = new Schema<WorkspaceDocument>({
         type: String,
         required: [true, 'Workspace slug is required'],
         unique: true,
+        index: true
     },
     description: {
         type: String,
@@ -55,7 +56,9 @@ const workspaceSchema = new Schema<WorkspaceDocument>({
     },
     ownerId: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        index: true,
+        required: [true, 'Owner ID is required']
     },
     settings: {
         type: workspaceSettingsSchema,

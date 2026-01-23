@@ -12,6 +12,7 @@ export type ProjectStats = {
 
 export interface IProject {
     name: string;
+    slug: string;
     description?: string;
     workspaceId: ObjectId;
     createdBy: ObjectId;

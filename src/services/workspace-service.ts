@@ -8,7 +8,6 @@ import { config } from "@/config/env";
 
 class WorkspaceService {
     async createWorkspace(ctx: WorkspaceContext, data: WorkspaceInput) {
-        // Implementation here
         //TODO: Use Transactions to ensure both workspace and workspace member are created successfully
         const slug = slugify(data.name);
         const newWorkspace = await Workspace.create({
@@ -81,6 +80,7 @@ class WorkspaceService {
             }
         }
 
+        //TODO: Use Transactions to ensure all related data is deleted successfully
         // DELETE PROJECTS
         // DELETE TASKS
         // DELETE WORKSPACE INVITATIONS

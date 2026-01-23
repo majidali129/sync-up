@@ -4,6 +4,8 @@ import { WorkspaceMember } from "@/models/workspace-member";
 import { AddMemberToProjectInput, CreateProjectInput, UpdateProjectInput, UpdateProjectStatusInput } from "@/schemas/project";
 import { ApiError } from "@/utils/api-error";
 import { ProjectContext } from "@/types/project";
+import { Workspace } from "@/models/workspace-model";
+import slugify from "slugify";
 
 
 class ProjectService {
@@ -11,12 +13,21 @@ class ProjectService {
         if (!ctx.workspaceId) {
             throw new ApiError(400, 'Workspace ID is required to create a project');
         };
+        // ! workspace owner & admin  should also be member of the project by default
+        const membersByDefault = [ctx.userId];
+
+        if (ctx.userRole === 'admin') {
+
+            const workspaceOwner = await Workspace.findById(ctx.workspaceId).select('ownerId').lean().exec();
+            membersByDefault.push(workspaceOwner?.ownerId.toString());
+        }
 
         const project = await Project.create({
             ...data,
+            slug: slugify(data.name, { lower: true, strict: true }),
             createdBy: ctx.userId,
             workspaceId: ctx.workspaceId,
-            members: [ctx.userId]
+            members: membersByDefault
         });
 
         if (!project) {
@@ -74,15 +85,20 @@ class ProjectService {
             data: project
         }
     }
-    async getProjects(ctx: ProjectContext, query: { limit?: string, page?: string }) {
+    async getProjects(ctx: ProjectContext, query: { limit?: string, page?: string, search?: string }) {
         const limit = query.limit ? parseInt(query.limit, 10) : +config.DEFAULT_RESPONSE_LIMIT;
         const page = query.page ? parseInt(query.page, 10) : 1;
         const skip = (page - 1) * limit;
 
         const findQuery: any = { workspaceId: ctx.workspaceId };
 
-        // if user is owner then he can see all projects
-        // if user is admin or member then he can see only projects where he is a member of others or his created projects
+        if (query.search) {
+            findQuery.name = { $regex: query.search, $options: 'i' };
+            findQuery.description = { $regex: query.search, $options: 'i' };
+        }
+
+        //! if user is owner then he can see all projects
+        //! if user is admin or member then he can see only projects where he is a member of others or his created projects
         if (ctx.userRole !== 'owner') {
             findQuery.$or = [
                 {

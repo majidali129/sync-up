@@ -10,6 +10,12 @@ const projectSchema = new Schema<ProjectDocument>({
         required: [true, 'Project name is required'],
         trim: true,
     },
+    slug: {
+        type: String,
+        required: [true, 'Project slug is required'],
+        unique: true,
+        index: true
+    },
     description: {
         type: String,
         trim: true,
@@ -18,6 +24,7 @@ const projectSchema = new Schema<ProjectDocument>({
         type: Schema.Types.ObjectId,
         ref: 'Workspace',
         required: [true, 'Workspace ID is required'],
+        index: true
     },
     createdBy: {
         type: Schema.Types.ObjectId,
@@ -38,7 +45,8 @@ const projectSchema = new Schema<ProjectDocument>({
             values: ['active', 'on-hold', 'completed', 'archived'],
             message: 'Status must be one of active, on-hold, completed, or archived',
         },
-        default: 'active'
+        default: 'active',
+        index: true
     },
     visibility: {
         type: String,

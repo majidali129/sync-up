@@ -7,12 +7,14 @@ const taskSchema = new Schema<TaskDocument>({
     workspaceId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Workspace',
-        required: [true, 'Workspace ID is required']
+        required: [true, 'Workspace ID is required'],
+        index: true
     },
     projectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Project',
-        required: [true, 'Project ID is required']
+        required: [true, 'Project ID is required'],
+        index: true
     },
     title: {
         type: String,
@@ -21,7 +23,8 @@ const taskSchema = new Schema<TaskDocument>({
     slug: {
         type: String,
         unique: [true, 'Task slug must be unique'],
-        required: [true, 'Task slug is required']
+        required: [true, 'Task slug is required'],
+        index: true,
     },
     description: String,
     type: {
@@ -49,7 +52,8 @@ const taskSchema = new Schema<TaskDocument>({
             message: "Task status could be either todo, in progress, review, done or blocked",
         },
         default: TaskStatus.TODO,
-        required: [true, 'Task status is required']
+        required: [true, 'Task status is required'],
+        index: true
     },
     isPersonal: {
         type: Boolean,

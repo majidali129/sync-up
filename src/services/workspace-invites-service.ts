@@ -11,8 +11,6 @@ import crypto from "crypto";
 
 
 class WorkspaceInvitesService {
-
-    // Off course workspace owner will be the one sending the invite. so he'll in req after authentication. and controller will pass that.
     async sendInvite(ctx: WorkspaceInviteContext, { email, role }: WorkspaceInviteInput) {
         const targetUser = await User.findOne({ email, accountStatus: 'active' }).select('_id').lean().exec();
         if (!targetUser) {

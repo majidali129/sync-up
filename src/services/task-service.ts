@@ -132,7 +132,7 @@ class TaskService {
         }
     }
 
-    async getTasks(ctx: TaskContext, query: { limit?: string, page?: string, status?: string }) {
+    async getTasks(ctx: TaskContext, query: { limit?: string, page?: string, status?: string, search?: string }) {
         const limit = query.limit ? parseInt(query.limit, 10) : +config.DEFAULT_RESPONSE_LIMIT;
         const page = query.page ? parseInt(query.page, 10) : 1;
         const skip = (page - 1) * limit;
@@ -152,6 +152,10 @@ class TaskService {
         const findQuery: any = { projectId: ctx.projectId, workspaceId: ctx.workspaceId };
         if (query.status) {
             findQuery.status = query.status;
+        }
+        if (query.search) {
+            findQuery.title = { $regex: query.search, $options: 'i' };
+            findQuery.description = { $regex: query.search, $options: 'i' };
         }
 
         // if owner in workspace => see all tasks across workspace

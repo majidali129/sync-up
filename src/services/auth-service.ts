@@ -113,6 +113,7 @@ class AuthService {
     }
 
     async signInUser(signInData: SignInInput) {
+        //TODO: handle sign in with invite token logic
         const { email, password, inviteToken } = signInData;
 
         const user = await User.findOne({
@@ -224,6 +225,8 @@ class AuthService {
         if (!user) throw new ApiError(404, 'User not found');
         return user;
     }
+
+    //TODO: refresh token logic
 }
 
 
