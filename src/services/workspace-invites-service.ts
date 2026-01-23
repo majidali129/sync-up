@@ -4,33 +4,33 @@ import { WorkspaceInvite } from "@/models/workspace-invites-model";
 import { WorkspaceMember } from "@/models/workspace-member";
 import { Workspace } from "@/models/workspace-model";
 import { AcceptInviteInput, WorkspaceInviteInput } from "@/schemas/workspace-invite";
-import { INVITE_STATUS } from "@/types/workspace";
+import { INVITE_STATUS, WorkspaceInviteContext } from "@/types/workspace";
 import { ApiError } from "@/utils/api-error";
 import { sendInviteEmail } from "@/utils/email/email-actions";
 import crypto from "crypto";
 
 
-
 class WorkspaceInvitesService {
 
     // Off course workspace owner will be the one sending the invite. so he'll in req after authentication. and controller will pass that.
-    async sendInvite(owner: { id: string, username: string, email: string, fullName: string }, workspaceId: string, { email, role }: WorkspaceInviteInput) {
+    async sendInvite(ctx: WorkspaceInviteContext, { email, role }: WorkspaceInviteInput) {
         const targetUser = await User.findOne({ email, accountStatus: 'active' }).select('_id').lean().exec();
         if (!targetUser) {
             throw new ApiError(404, 'The user you are trying to invite no longer exist');
         };
 
-        const workspace = await Workspace.findOne({ _id: workspaceId, ownerId: owner.id }).select('_id name').lean().exec();
+        // only owner can send invite for his workspace
+        const workspace = await Workspace.findOne({ _id: ctx.workspaceId, ownerId: ctx.userId }).select('_id name').lean().exec();
         if (!workspace) {
-            throw new ApiError(404, 'The workspace you are trying to invite for, no longer exist');
+            throw new ApiError(403, "Forbidden: You are not authorized to send invites for this workspace");
         };
 
-        if (owner.id === targetUser._id.toString()) {
+        if (ctx.userId === targetUser._id.toString()) {
             throw new ApiError(400, 'You cannot invite yourself to this workspace');
         };
 
         const existingInvite = await WorkspaceInvite.findOne({
-            workspaceId,
+            workspaceId: ctx.workspaceId,
             email,
             tokenExpiresAt: { $gt: Date.now() }
         });
@@ -40,7 +40,7 @@ class WorkspaceInvitesService {
         };
 
         const isAlreadyMember = await WorkspaceMember.findOne({
-            workspaceId,
+            workspaceId: ctx.workspaceId,
             userId: targetUser._id
         }).lean().exec();
 
@@ -55,8 +55,8 @@ class WorkspaceInvitesService {
         const tokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours from now
 
         const invite = await WorkspaceInvite.create({
-            workspaceId,
-            invitedBy: owner.id,
+            workspaceId: ctx.workspaceId,
+            invitedBy: ctx.userId,
             role,
             email,
             token: hashedToken,
@@ -73,7 +73,7 @@ class WorkspaceInvitesService {
                 email,
                 token,
                 workspaceName: workspace.name,
-                inviterName: owner.fullName
+                inviterName: ctx.fullName
             })
         } catch (error) {
             await WorkspaceInvite.findByIdAndDelete(invite._id).exec();
@@ -90,27 +90,26 @@ class WorkspaceInvitesService {
 
     }
 
-    async acceptInvite(userId: string, userEmail: string, { token }: AcceptInviteInput) {
-        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    async acceptInvite(ctx: WorkspaceInviteContext, { token }: AcceptInviteInput) {
+        // const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
         const invite = await WorkspaceInvite.findOne({
-            token: hashedToken,
+            // token: hashedToken,
+            token,
+            status: 'pending',
             tokenExpiresAt: { $gt: Date.now() }
         });
 
         if (!invite) {
-            throw new ApiError(400, 'Invalid or expired invite token');
+            throw new ApiError(400, 'Invalid or expired invite token. Or the invite has already been used.');
         };
 
-        if (invite.status === 'accepted') {
-            throw new ApiError(400, 'This invite has already been accepted');
-        }
-
-        if (userEmail !== invite.email) {
+        if (ctx.email !== invite.email) {
             throw new ApiError(400, 'This invite is not for your email address');
         }
+
         //TODO: transaction here
         const newMember = await WorkspaceMember.create({
-            userId,
+            userId: ctx.userId,
             workspaceId: invite.workspaceId,
             role: invite.role,
             joinedAt: new Date(),
@@ -125,6 +124,9 @@ class WorkspaceInvitesService {
         invite.status = 'accepted';
 
         await invite.save({ validateBeforeSave: false });
+        await Workspace.findByIdAndUpdate(invite.workspaceId, {
+            $inc: { membersCount: 1 }
+        }).exec();
 
         return {
             status: 200,
@@ -133,15 +135,15 @@ class WorkspaceInvitesService {
         }
     }
 
-    async getWorkspaceInvites(workspaceId: string, userId: string, query: { status?: INVITE_STATUS, limit?: string, page?: string }) {
-        const workspace = await Workspace.findOne({ _id: workspaceId, ownerId: userId }).select('_id').lean().exec();
+    async getWorkspaceInvites(ctx: WorkspaceInviteContext, query: { status?: INVITE_STATUS, limit?: string, page?: string }) {
+        const workspace = await Workspace.findOne({ _id: ctx.workspaceId, ownerId: ctx.userId }).select('_id').lean().exec();
         if (!workspace) {
             throw new ApiError(404, 'Workspace not found or you are not authorized to view its invites');
         }
         const limit = query.limit ? parseInt(query.limit, 10) : +config.DEFAULT_RESPONSE_LIMIT;
         const page = query.page ? parseInt(query.page, 10) : 1;
         const skip = (page - 1) * limit;
-        const apiQuery: any = { workspaceId };
+        const apiQuery: any = { workspaceId: ctx.workspaceId };
         if (query.status) {
             apiQuery.status = query.status;
         }
@@ -158,9 +160,12 @@ class WorkspaceInvitesService {
         }
     }
 
-    async getGlobalInvites(userEmail: string) {
-        const apiQuery: any = { email: userEmail, status: 'accepted' };
-        const invites = await WorkspaceInvite.find(apiQuery).lean().exec();
+    async getGlobalInvites(ctx: WorkspaceInviteContext) {
+        const apiQuery: any = { email: ctx.email, status: 'accepted' };
+        const invites = await WorkspaceInvite.find(apiQuery).select('_id role invitedBy email status createdAt').populate({
+            path: 'invitedBy',
+            select: 'fullName email username _id profilePhoto'
+        }).lean().exec();
 
         const message = invites.length === 0 ? 'You have no pending invites' : 'Your pending invites retrieved successfully';
         return {

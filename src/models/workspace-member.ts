@@ -16,7 +16,7 @@ const workspaceMemberSchema = new Schema<WorkspaceMemberDocument>({
     },
     role: {
         type: String,
-        enum: ['admin', 'owner', 'member', 'viewer'],
+        enum: ['admin', 'owner', 'member'],
         default: 'owner',
         required: [true, 'Role is required']
     },

@@ -1,26 +1,25 @@
 import { Workspace } from "@/models/workspace-model";
 import { UpdateWorkspaceInput, WorkspaceInput } from "@/schemas/workspace";
 import slugify from "slugify";
-import { Request } from "express";
 import { WorkspaceMember } from "@/models/workspace-member";
-// import mongoose from 'mongoose'
-
+import { WorkspaceContext } from "@/types/workspace";
+import { config } from "@/config/env";
 
 
 class WorkspaceService {
-    async createWorkspace(req: Request, data: WorkspaceInput) {
+    async createWorkspace(ctx: WorkspaceContext, data: WorkspaceInput) {
         // Implementation here
         //TODO: Use Transactions to ensure both workspace and workspace member are created successfully
         const slug = slugify(data.name);
         const newWorkspace = await Workspace.create({
             ...data,
             slug,
-            ownerId: req.user.id,
+            ownerId: ctx.userId,
         });
 
         await WorkspaceMember.create({
             workspaceId: newWorkspace._id,
-            userId: req.user.id,
+            userId: ctx.userId,
             role: 'owner',
             joinedAt: new Date()
         });
@@ -33,9 +32,9 @@ class WorkspaceService {
 
     }
 
-    async updateWorkspace(req: Request, workspaceId: string, data: UpdateWorkspaceInput) {
+    async updateWorkspace(ctx: WorkspaceContext, data: UpdateWorkspaceInput) {
         const workspace = await Workspace.findOne({
-            _id: workspaceId,
+            _id: ctx.workspaceId,
         }).select('_id slug ownerId name description icon settings updatedAt').exec();
 
         if (!workspace) {
@@ -46,7 +45,7 @@ class WorkspaceService {
             }
         };
 
-        if (workspace.ownerId.toString() !== req.user.id) {
+        if (workspace.ownerId.toString() !== ctx.userId) {
             return {
                 status: 403,
                 message: 'You are not authorized to update this workspace',
@@ -70,12 +69,10 @@ class WorkspaceService {
         }
     }
 
-    async deleteWorkspace(req: Request, workspaceId: string) {
+    async deleteWorkspace(ctx: WorkspaceContext) {
         const workspace = await Workspace.findOne({
-            _id: workspaceId,
-            ownerId: req.user.id
+            _id: ctx.workspaceId, ownerId: ctx.userId
         });
-
         if (!workspace) {
             return {
                 status: 404,
@@ -88,11 +85,11 @@ class WorkspaceService {
         // DELETE TASKS
         // DELETE WORKSPACE INVITATIONS
         // DELETE WORKSPACE MEMBERS
-        await WorkspaceMember.deleteMany({
-            workspaceId
-        });
+        // await WorkspaceMember.deleteMany({
+        //     workspaceId: ctx.workspaceId
+        // });
         // FINALLY DELETE WORKSPACE
-        await workspace.deleteOne({ _id: workspaceId })
+        // await workspace.deleteOne({ _id: ctx.workspaceId })
         return {
             status: 200,
             message: 'Workspace deleted successfully',
@@ -100,8 +97,8 @@ class WorkspaceService {
         }
     }
 
-    async getWorkspaceDetails(req: Request, workspaceId: string) {
-        const workspace = await Workspace.findById(workspaceId).populate({
+    async getWorkspaceDetails(ctx: WorkspaceContext) {
+        const workspace = await Workspace.findById(ctx.workspaceId).populate({
             path: 'ownerId',
             select: '_id username ownerId fullName email profilePhoto'
         }).lean().exec();
@@ -121,13 +118,33 @@ class WorkspaceService {
         }
     }
 
-    async getAllWorkspaces(query: any) {
-        const workspaces = await Workspace.find({}).lean().exec();
+    async getAllWorkspaces(ctx: WorkspaceContext, query: { limit?: string, page?: string }) {
+        const limit = query.limit ? parseInt(query.limit, 10) : +config.DEFAULT_RESPONSE_LIMIT;
+        const page = query.page ? parseInt(query.page, 10) : 1;
+        const skip = (page - 1) * limit;
+
+        // fetch workspaces where user is owner of( his workspaces ) or belong to ( invited workspaces )
+        const workspaceIds = await WorkspaceMember.find({ userId: ctx.userId }).distinct('workspaceId').lean().exec();
+
+        const [workspaces, total] = await Promise.all([
+            Workspace.find({
+                _id: { $in: workspaceIds }
+            })
+                .skip(skip)
+                .limit(limit)
+                .lean().exec(),
+            Workspace.countDocuments({ _id: { $in: workspaceIds } }).exec()
+        ])
 
         return {
             status: 200,
             message: 'Workspaces fetched successfully',
-            data: workspaces
+            data: {
+                total,
+                limit,
+                page,
+                workspaces,
+            }
         }
     }
 }

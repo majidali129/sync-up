@@ -1,32 +1,37 @@
 import { createWorkspaceSchema, updateWorkspaceSchema } from "@/schemas/workspace";
 import workspaceService from "@/services/workspace-service";
+import { USER_ROLE } from "@/types/user";
+import { WorkspaceContext } from "@/types/workspace";
 import { apiResponse } from "@/utils/api-response";
 import { asyncHandler } from "@/utils/async-handler";
+import { Request } from "express";
 
+const getCtx = (req: Request): WorkspaceContext => {
+    return {
+        userId: req.user.id,
+        userRole: req.user.role as USER_ROLE,
+        workspaceId: req.params.workspaceId as string,
+    }
+}
 
 
 export const createWorkspace = asyncHandler(async (req, res) => {
-    const result = await workspaceService.createWorkspace(req, createWorkspaceSchema.parse(req.body));
+    const result = await workspaceService.createWorkspace(getCtx(req), createWorkspaceSchema.parse(req.body));
     return apiResponse(res, result.status, result.message, result.data)
-
 })
 export const updateWorkspace = asyncHandler(async (req, res) => {
-    const workspaceId = req.params.id as string;
-    const result = await workspaceService.updateWorkspace(req, workspaceId, updateWorkspaceSchema.parse(req.body));
+    const result = await workspaceService.updateWorkspace(getCtx(req), updateWorkspaceSchema.parse(req.body));
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const deleteWorkspace = asyncHandler(async (req, res) => {
-    const workspaceId = req.params.id as string;
-    const result = await workspaceService.deleteWorkspace(req, workspaceId);
+    const result = await workspaceService.deleteWorkspace(getCtx(req));
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const getWorkspaceDetails = asyncHandler(async (req, res) => {
-    const workspaceId = req.params.id as string;
-    const result = await workspaceService.getWorkspaceDetails(req, workspaceId);
+    const result = await workspaceService.getWorkspaceDetails(getCtx(req));
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const getAllWorkspaces = asyncHandler(async (req, res) => {
-    const query = req.query;
-    const result = await workspaceService.getAllWorkspaces(query);
+    const result = await workspaceService.getAllWorkspaces(getCtx(req), req.query);
     return apiResponse(res, result.status, result.message, result.data)
 })

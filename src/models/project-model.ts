@@ -3,17 +3,6 @@ import mongoose, { HydratedDocument, model, Schema } from "mongoose";
 
 type ProjectDocument = HydratedDocument<IProject>;
 
-// const projectMemberSchema = new Schema({
-//     id: {
-//         type: Schema.Types.ObjectId,
-//         ref: 'User',
-//         required: [true, 'Member ID is required'],
-//     },
-//     username: {
-//         type: String,
-//         required: [true, 'Member username is required'],
-//     }
-// })
 
 const projectSchema = new Schema<ProjectDocument>({
     name: {
@@ -30,12 +19,6 @@ const projectSchema = new Schema<ProjectDocument>({
         ref: 'Workspace',
         required: [true, 'Workspace ID is required'],
     },
-    // key: {
-    //     type: String,
-    //     trim: true,
-    //     unique: true,
-    //     required: [true, 'Project key is required'],
-    // },
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -45,7 +28,6 @@ const projectSchema = new Schema<ProjectDocument>({
         {
             type: Schema.Types.ObjectId,
             ref: 'User',
-            default: []
         }
     ],
     icon: String,

@@ -12,9 +12,9 @@ router.use('/:projectId/tasks', taskRouter) // Mount task routes under project r
 
 router.use(verifyJWT);
 
-router.route('/').post(verifyWorkspaceOwnerShip(['owner', 'admin']), createProject).get(verifyWorkspaceOwnerShip(['owner', 'admin', 'member', 'viewer']), getProjects);
+router.route('/').post(verifyWorkspaceOwnerShip(['owner', 'admin']), createProject).get(verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjects);
 
-router.get('/:id', verifyWorkspaceOwnerShip(['owner', 'admin', 'member', 'viewer']), getProjectDetails)
+router.get('/:id', verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjectDetails)
 
 router.post('/:id/members',
     verifyWorkspaceOwnerShip(['owner', 'admin']),
@@ -27,7 +27,7 @@ router.delete('/:id/members/:memberId',
 );
 
 router.get('/:id/members',
-    verifyWorkspaceOwnerShip(['owner', 'admin', 'member', 'viewer']),
+    verifyWorkspaceOwnerShip(['owner', 'admin', 'member']),
     getProjectMembers
 );
 

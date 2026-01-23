@@ -13,7 +13,7 @@ export const verifyJWT = asyncHandler(async (req: Request, _res: Response, next:
     const payload = decoded.payload as { id: string, email: string, username: string };
 
     const currentUser = await User.findById(payload.id).select('+_id +username +email +isEmailVerified').exec();
-    if (!currentUser) throw new ApiError(401, 'Unauthorized: User associated with this token no longer exists');
+    if (!currentUser) throw new ApiError(401, 'Unauthorized: Please log in to access this resource');
 
     //TODO: Check if user update his password after the token was issued
 

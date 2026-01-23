@@ -43,9 +43,6 @@ export const forgotPasswordSchema = z.object({
 
 // Reset Password Schema
 export const resetPasswordSchema = z.object({
-	token: z
-		.string()
-		.min(1, "Reset token is required"),
 	newPassword: z
 		.string()
 		.min(8, "Password must be at least 8 characters")
@@ -67,15 +64,6 @@ export const updatePasswordSchema = z.object({
 	path: ["newPassword"]
 });
 
-// Verify Email Schema
-export const verifyEmailSchema = z.object({
-	token: z
-		.string()
-		.min(1, "Verification token is required"),
-	userId: z
-		.string()
-		.min(1, "User ID is required")
-});
 
 // Refresh Token Schema
 export const refreshTokenSchema = z.object({
@@ -90,5 +78,4 @@ export type SignInInput = z.infer<typeof signInSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
-export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;

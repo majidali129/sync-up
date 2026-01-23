@@ -1,4 +1,4 @@
-export type USER_ROLE = 'admin' | 'owner' | 'member' | 'viewer'
+export type USER_ROLE = 'admin' | 'owner' | 'member'
 export type ACCOUNT_STATUS = 'active' | 'banned'
 
 export interface IUser {
@@ -22,4 +22,10 @@ export interface IUser {
     isOnline: boolean;
     lastSeen: Date;
     lastLoginAt?: Date;
+}
+
+export interface UserContext {
+    userId: string;
+    email: string;
+    token: string
 }
