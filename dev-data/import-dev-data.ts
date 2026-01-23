@@ -1,7 +1,7 @@
 import { User } from '../src/models/user-model'
-// import { Workspace } from '../src/models/workspace-model'
-// import { WorkspaceMember } from '../src/models/workspace-member'
-// import { WorkspaceInvite } from '../src/models/workspace-invites-model'
+import { Workspace } from '../src/models/workspace-model'
+import { WorkspaceMember } from '../src/models/workspace-member'
+import { WorkspaceInvite } from '../src/models/workspace-invites-model'
 import { Project } from '../src/models/project-model'
 import { connectDB } from '../src/db/connect-db'
 import { httpServer } from '../src/server'
@@ -78,11 +78,11 @@ const hashPasswords = async () => {
 
 const deleteData = async () => {
     try {
-        // await User.deleteMany({});
-        // await Workspace.deleteMany({});
-        // await WorkspaceMember.deleteMany({});
-        // await WorkspaceInvite.deleteMany({});
-        // await Project.deleteMany({});
+        await User.deleteMany({});
+        await Workspace.deleteMany({});
+        await WorkspaceMember.deleteMany({});
+        await WorkspaceInvite.deleteMany({});
+        await Project.deleteMany({});
     } catch (error) {
         console.error('Data Deletion Failed:', error);
         process.exit(1);

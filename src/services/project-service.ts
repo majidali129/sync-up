@@ -15,7 +15,8 @@ class ProjectService {
         const project = await Project.create({
             ...data,
             createdBy: ctx.userId,
-            workspaceId: ctx.workspaceId
+            workspaceId: ctx.workspaceId,
+            members: [ctx.userId]
         });
 
         if (!project) {
@@ -77,11 +78,29 @@ class ProjectService {
         const limit = query.limit ? parseInt(query.limit, 10) : +config.DEFAULT_RESPONSE_LIMIT;
         const page = query.page ? parseInt(query.page, 10) : 1;
         const skip = (page - 1) * limit;
-        const [projects, total] = await Promise.all([Project.find({ workspaceId: ctx.workspaceId }).populate({
+
+        const findQuery: any = { workspaceId: ctx.workspaceId };
+
+        // if user is owner then he can see all projects
+        // if user is admin or member then he can see only projects where he is a member of others or his created projects
+        if (ctx.userRole !== 'owner') {
+            findQuery.$or = [
+                {
+                    visibility: 'public'
+                },
+                { createdBy: ctx.userId },
+                {
+                    members: {
+                        $in: [ctx.userId]
+                    }
+                }
+            ]
+        }
+        const [projects, total] = await Promise.all([Project.find(findQuery).populate({
             path: 'createdBy',
             select: 'username fullName email profilePhoto _id'
         }).select('_id name icon color status visibility createdAt').limit(limit).skip(skip).lean().exec(),
-        Project.countDocuments({ workspaceId: ctx.workspaceId }).exec()
+        Project.countDocuments(findQuery).exec()
         ]);
         return {
             status: 200,

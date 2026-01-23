@@ -14,7 +14,6 @@ export interface IProject {
     name: string;
     description?: string;
     workspaceId: ObjectId;
-    // key: string; // Unique project key per workspace
     createdBy: ObjectId;
     members: ObjectId[];
     icon?: string; // URL or EMOJI

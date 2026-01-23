@@ -2,7 +2,7 @@ import { WorkspaceMember } from "@/models/workspace-member";
 import { ApiError } from "@/utils/api-error";
 import { asyncHandler } from "@/utils/async-handler"
 
-type Role = 'owner' | 'admin' | 'member' | 'viewer';
+type Role = 'owner' | 'admin' | 'member'
 export const verifyWorkspaceOwnerShip = (requiredRole: Role | Role[]) => {
     return asyncHandler(async (req, _, next) => {
         const { workspaceId } = req.params;

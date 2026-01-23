@@ -1,5 +1,6 @@
 import { User } from "@/models/user-model";
-import { ForgotPasswordInput, SignInInput, SignUpInput } from "@/schemas/auth";
+import { ForgotPasswordInput, ResetPasswordInput, SignInInput, SignUpInput } from "@/schemas/auth";
+import { UserContext } from "@/types/user";
 import { ApiError } from "@/utils/api-error";
 import { sendResetPasswordEmail, sendVerificationEmail } from "@/utils/email/email-actions";
 import { generateToken } from "@/utils/generate-token";
@@ -75,9 +76,9 @@ class AuthService {
 
     }
 
-    async verifyEmail(token: string, userId: string) {
-        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-        const user = await User.findById(userId).select('isEmailVerified emailVerificationToken emailVerificationTokenExpires');
+    async verifyEmail(ctx: UserContext) {
+        const hashedToken = crypto.createHash('sha256').update(ctx.token).digest('hex');
+        const user = await User.findById(ctx.userId).select('isEmailVerified emailVerificationToken emailVerificationTokenExpires');
         if (!user) {
             throw new ApiError(404, 'User account not found');
         }
@@ -141,10 +142,10 @@ class AuthService {
         return { user, accessToken, refreshToken };
     }
 
-    async signOutUser(userId: string) {
-        await User.findByIdAndUpdate(userId, { $set: { refreshToken: null, lastSeen: new Date() } });
+    async signOutUser(ctx: UserContext) {
+        await User.findByIdAndUpdate(ctx.userId, { $set: { refreshToken: null, lastSeen: new Date() } });
     }
-    async forgotPassword(email: ForgotPasswordInput['email']) {
+    async forgotPassword({ email }: ForgotPasswordInput) {
         const user = await User.findOne({ email });
         if (!user) {
             throw new ApiError(404, 'Account with the provided email does not exist');
@@ -176,9 +177,9 @@ class AuthService {
         }
 
     }
-    async resetPassword(token: string, newPassword: string) {
+    async resetPassword(ctx: UserContext, { newPassword }: ResetPasswordInput) {
 
-        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+        const hashedToken = crypto.createHash('sha256').update(ctx.token).digest('hex');
 
         const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetTokenExpires: { $gt: Date.now() } }).select('password _id passwordResetToken passwordResetTokenExpires passwordChangedAt passwordResetTokenIssuedAt').exec();
         if (!user) throw new ApiError(404, 'Token is invalid or has expired');
@@ -204,9 +205,9 @@ class AuthService {
             message: 'Password has been reset successfully'
         }
     }
-    async updatePassword(userId: string, data: { currentPassword: string; newPassword: string }) {
+    async updatePassword(ctx: UserContext, data: { currentPassword: string; newPassword: string }) {
         const { currentPassword, newPassword } = data;
-        const user = await User.findById(userId).select('+password').exec();
+        const user = await User.findById(ctx.userId).select('+password').exec();
         if (!user) throw new ApiError(404, 'User not found');
 
         const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
@@ -218,8 +219,8 @@ class AuthService {
 
         await user.save({ validateBeforeSave: false });
     }
-    async getCurrentUser(userId: string) {
-        const user = await User.findById(userId).select('_id username fullName email profilePhoto').lean().exec();
+    async getCurrentUser(ctx: UserContext) {
+        const user = await User.findById(ctx.userId).select('_id username fullName email profilePhoto').lean().exec();
         if (!user) throw new ApiError(404, 'User not found');
         return user;
     }

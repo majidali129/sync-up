@@ -18,8 +18,8 @@ const workspaceInviteSchema = new Schema<WorkspaceInviteDocument>({
     role: {
         type: String,
         enum: {
-            values: ['admin', 'member', 'viewer'],
-            message: 'Role must be either admin, member, or viewer'
+            values: ['admin', 'member'],
+            message: 'Role must be either admin, member'
         },
         required: [true, 'Role is required']
     },

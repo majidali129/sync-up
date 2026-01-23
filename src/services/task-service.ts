@@ -137,11 +137,30 @@ class TaskService {
         const page = query.page ? parseInt(query.page, 10) : 1;
         const skip = (page - 1) * limit;
 
+        const isProjectMember = await Project.findOne({
+            _id: ctx.projectId,
+            workspaceId: ctx.workspaceId,
+            members: {
+                $in: [ctx.userId]
+            }
+        }).lean().exec();
+
+        if (!isProjectMember) {
+            throw new ApiError(403, 'Forbidden: You are not a member of this project');
+        }
+
         const findQuery: any = { projectId: ctx.projectId, workspaceId: ctx.workspaceId };
         if (query.status) {
             findQuery.status = query.status;
         }
 
+        // if owner in workspace => see all tasks across workspace
+        // if admin => see tasks created by or assigned to him
+        // if member => see tasks created by or assigned to him
+
+        if (ctx.userRole !== 'owner') {
+            findQuery.$or = [{ creator: ctx.userId }, { assignee: ctx.userId }];
+        }
         const [tasks, total] = await Promise.all([Task.find(findQuery).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).skip(skip).limit(limit)
             ,
         Task.countDocuments(findQuery)]);
@@ -156,9 +175,6 @@ class TaskService {
         }
     }
     async toggleTaskStatus(ctx: TaskContext, { status }: ToggleTaskStatusInput) {
-        if (ctx.userRole === 'viewer') {
-            throw new ApiError(403, 'Viewers are not allowed to change task status');
-        }
         const task = await Task.findOne({
             _id: ctx.taskId,
             projectId: ctx.projectId,
@@ -187,7 +203,7 @@ class TaskService {
             throw new ApiError(403, 'Forbidden: Only owners and admins can assign tasks');
         };
 
-        const [workspaceMember, project] = await Promise.all([
+        const [workspaceMember, projectMember] = await Promise.all([
             WorkspaceMember.findOne({ userId: assigneeId, workspaceId: ctx.workspaceId }).lean(),
             Project.findOne({
                 _id: ctx.projectId, members: {
@@ -197,15 +213,18 @@ class TaskService {
         ]);
 
         if (!workspaceMember) throw new ApiError(404, 'Assignee is not a member of this workspace');
-        if (!project) throw new ApiError(403, 'Assignee is not a member of this project');
+        if (!projectMember) throw new ApiError(403, 'Assignee is not a member of this project');
 
         const targetRole = workspaceMember.role; // person being assigned the task
         const assignerRole = ctx.userRole; // person assigning the task
 
 
         if (assignerRole === 'admin') {
-            if (targetRole === 'owner' || targetRole === 'admin') {
-                throw new ApiError(403, `Admins cannot assign tasks to ${targetRole}s`);
+            if (targetRole === 'owner') {
+                throw new ApiError(403, `Admins cannot assign tasks to owners`);
+            }
+            if (assigneeId === ctx.userId) {
+                throw new ApiError(403, `You cannot assign tasks to themselves`);
             }
         }
 

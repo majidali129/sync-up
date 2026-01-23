@@ -12,7 +12,7 @@ const router = Router({ mergeParams: true })
 router.use(verifyJWT);
 
 router.route('/').post(verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), createTask).get(
-    verifyWorkspaceOwnerShip(['owner', 'admin', 'member', 'viewer']),
+    verifyWorkspaceOwnerShip(['owner', 'admin', 'member']),
     getTasks);
 
 router.route('/:id').patch(
@@ -21,7 +21,7 @@ router.route('/:id').patch(
     .delete(
         verifyWorkspaceOwnerShip(['owner', 'admin', 'member']),
         deleteTask).get(
-            verifyWorkspaceOwnerShip(['owner', 'admin', 'member', 'viewer']),
+            verifyWorkspaceOwnerShip(['owner', 'admin', 'member']),
             getTaskDetails);
 
 router.post('/:id/toggle-status', verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), toggleTaskStatus);
