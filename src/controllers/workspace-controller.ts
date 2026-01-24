@@ -1,6 +1,5 @@
 import { createWorkspaceSchema, updateWorkspaceSchema } from "@/schemas/workspace";
 import workspaceService from "@/services/workspace-service";
-import { USER_ROLE } from "@/types/user";
 import { WorkspaceContext } from "@/types/workspace";
 import { apiResponse } from "@/utils/api-response";
 import { asyncHandler } from "@/utils/async-handler";
@@ -9,7 +8,7 @@ import { Request } from "express";
 const getCtx = (req: Request): WorkspaceContext => {
     return {
         userId: req.user.id,
-        userRole: req.user.role as USER_ROLE,
+        userRole: req.user.workspaceMember!.role,
         workspaceId: req.params.workspaceId as string,
     }
 }

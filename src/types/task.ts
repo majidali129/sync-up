@@ -34,7 +34,7 @@ export interface ITask {
     priority: TaskPriority;
     status: TaskStatus;
     isPersonal?: boolean;
-    assignee?: ObjectId;
+    assignees?: ObjectId[];
     creator: ObjectId;
     estimatedTime: number; // minutes
     actualTime?: number;
@@ -43,6 +43,9 @@ export interface ITask {
     completedAt?: Date;
     parentTask?: ObjectId;
     subtasks?: ObjectId[];
+    lastModifiedAt: Date;
+    lastModifiedBy?: ObjectId;
+    completedBy?: ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -53,4 +56,5 @@ export interface TaskContext {
     projectId: string;
     workspaceId: string;
     taskId?: string;
+    isProjectMember: boolean;
 }

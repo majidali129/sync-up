@@ -61,3 +61,18 @@ export interface WorkspaceInviteContext {
     fullName: string
     workspaceId?: string;
 }
+
+export interface IWorkspaceAuditLog {
+    workspaceId: ObjectId;
+    resourceType: 'project' | 'task' | 'member' | 'setting';
+    resourceId: ObjectId;
+    action: 'created' | 'updated' | 'deleted' | 'joined' | 'left' | 'invited' | 'assign' | 'unassign' | 'member_added' | 'member_removed' | 'setting_changed';
+    performedBy: ObjectId;
+    // changes: {
+    //     field: string;
+    //     oldValue: any;
+    //     newValue: any;
+    // }[];
+    timestamp: Date;
+    ipAddress?: string;
+}

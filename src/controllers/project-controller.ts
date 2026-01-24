@@ -3,100 +3,59 @@ import { projectService } from "@/services/project-service"
 import { ProjectContext } from "@/types/project";
 import { apiResponse } from "@/utils/api-response";
 import { asyncHandler } from "@/utils/async-handler"
+import { Request } from "express";
 
+
+const getCtx = (req: Request): ProjectContext => {
+    return {
+        userId: req.user.id,
+        userRole: req.user.workspaceMember!.role,
+        workspaceId: req.params.workspaceId as string,
+        projectId: req.params.projectId as string,
+        isProjectMember: req.isProjectMember || false
+    }
+}
 
 
 export const createProject = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-    };
-    const result = await projectService.createProject(ctx, createProjectSchema.parse(req.body))
+
+    const result = await projectService.createProject(getCtx(req), createProjectSchema.parse(req.body))
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const updateProject = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-        projectId: req.params.id as string,
-    };
-    const result = await projectService.updateProject(ctx, updateProjectSchema.parse(req.body))
+    const result = await projectService.updateProject(getCtx(req), updateProjectSchema.parse(req.body))
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const deleteProject = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-        projectId: req.params.id as string,
-    };
-    const result = await projectService.deleteProject(ctx)
+    const result = await projectService.deleteProject(getCtx(req));
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const updateProjectStatus = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-        projectId: req.params.id as string,
-    };
-    const result = await projectService.updateProjectStatus(ctx, updateProjectStatusSchema.parse(req.body).status);
+    const result = await projectService.updateProjectStatus(getCtx(req), updateProjectStatusSchema.parse(req.body).status);
     return apiResponse(res, result.status, result.message, result.data)
 })
 
 export const getProjectDetails = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-        projectId: req.params.id as string,
-    };
-    const result = await projectService.getProjectDetails(ctx)
+    const result = await projectService.getProjectDetails(getCtx(req))
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const getProjects = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-    };
-    const result = await projectService.getProjects(ctx, req.query)
+    const result = await projectService.getProjects(getCtx(req), req.query)
     return apiResponse(res, result.status, result.message, result.data)
 })
 
 
 export const addProjectMember = asyncHandler(async (req, res) => {
-
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-        projectId: req.params.id as string,
-    };
-    const result = await projectService.addProjectMember(ctx, addMemberToProjectSchema.parse(req.body))
+    const result = await projectService.addProjectMember(getCtx(req), addMemberToProjectSchema.parse(req.body))
     return apiResponse(res, result.status, result.message, result.data)
 })
 
 export const removeProjectMember = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-        projectId: req.params.id as string,
-    };
-    const result = await projectService.removeProjectMember(ctx, req.params.memberId as string);
+    const result = await projectService.removeProjectMember(getCtx(req), req.params.memberId as string);
     return apiResponse(res, result.status, result.message, result.data)
 });
 
 export const getProjectMembers = asyncHandler(async (req, res) => {
-    const ctx: ProjectContext = {
-        userId: req.user.id,
-        userRole: req.user.role!,
-        workspaceId: req.params.workspaceId as string,
-        projectId: req.params.id as string,
-    };
-    const result = await projectService.getProjectMembers(ctx)
+    const result = await projectService.getProjectMembers(getCtx(req))
     return apiResponse(res, result.status, result.message, result.data)
 })

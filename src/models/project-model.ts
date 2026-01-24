@@ -64,6 +64,15 @@ const projectSchema = new Schema<ProjectDocument>({
         overdueTasks: { type: Number, default: 0 },
     },
     tags: [String],
+    lastModifiedAt: {
+        type: Date,
+        default: null,
+    }
+    , lastModifiedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+    }
 }, { timestamps: true })
 
 export const Project = mongoose.models?.Project || model<ProjectDocument>('Project', projectSchema);

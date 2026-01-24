@@ -1,37 +1,29 @@
 import { config } from "@/config/env";
 import { Project } from "@/models/project-model";
 import { Task } from "@/models/task-model";
+import { WorkspaceAuditLog } from "@/models/workspace-audit-log";
 import { WorkspaceMember } from "@/models/workspace-member";
 import { AssignTaskInput, CreateTaskInput, ToggleTaskStatusInput, UpdateTaskInput } from "@/schemas/task";
 import { TaskContext, TaskStatus } from "@/types/task";
 import { ApiError } from "@/utils/api-error";
-import { isOwnerAdmin } from "@/utils/is-owner-admin";
+import { canAssignTasks, canDeleteTask, canEditTaskContent, canUpdateTaskStatus } from "@/utils/permissions";
+import { ObjectId } from "mongoose";
 import slugify from "slugify";
 
 class TaskService {
 
     async createTask(ctx: TaskContext, data: CreateTaskInput) {
-        const query: any = {
-            _id: ctx.projectId,
-            workspaceId: ctx.workspaceId
-        };
-        // check for project membership except owner.
-        if (ctx.userRole !== 'owner') {
-            query.members = {
-                $in: [ctx.userId]
-            };
+        if (!ctx.isProjectMember) {
+            throw new ApiError(403, 'Forbidden: You are not a member of this project');
         }
 
-        const isMember = await Project.findOne(query).lean().exec();
-
-        if (!isMember) {
-            throw new ApiError(403, 'Forbidden: You are not a member of this project');
-        };
         const slug = slugify(data.title, { lower: true });
         const existingTask = await Task.findOne({ slug, projectId: ctx.projectId, workspaceId: ctx.workspaceId }).lean().exec();
+
         if (existingTask) {
             throw new ApiError(400, 'A task with the same title already exists in this project. Please choose a different title.');
         }
+
         const newTask = await Task.create({
             ...data,
             slug,
@@ -43,6 +35,19 @@ class TaskService {
         if (!newTask) {
             throw new ApiError(500, 'Failed to create task');
         };
+
+
+        await WorkspaceAuditLog.create({
+            workspaceId: ctx.workspaceId,
+            resourceType: 'task',
+            resourceId: newTask._id,
+            action: 'created',
+            performedBy: ctx.userId,
+            timestamp: new Date(),
+            description: `Task titled "${newTask.title}" was created`
+        })
+
+
 
         return {
             status: 201,
@@ -61,14 +66,28 @@ class TaskService {
             throw new ApiError(404, 'Task no longer exists');
         }
 
-        // if (ctx.userRole === 'member' && task.creator.toString() !== ctx.userId && task.assignee?.toString() !== ctx.userId) {
-        if (this.isMemberAuthor(ctx, task)) {
-            throw new ApiError(403, 'Forbidden: You must be the creator or assignee to update this task');
+        if (!canEditTaskContent(ctx.userRole, ctx.userId, task.creator.toString())) {
+            throw new ApiError(403, 'Forbidden: You do not have permission to edit this task');
         }
 
         Object.assign(task, data);
+        task.lastModifiedAt = new Date();
+        task.lastModifiedBy = ctx.userId;
 
         const updatedTask = await task.save();
+        if (!updatedTask) {
+            throw new ApiError(500, 'Failed to update task');
+        }
+
+        await WorkspaceAuditLog.create({
+            workspaceId: ctx.workspaceId,
+            resourceType: 'task',
+            resourceId: updatedTask._id,
+            action: 'updated',
+            performedBy: ctx.userId,
+            timestamp: new Date(),
+            description: `Task titled "${updatedTask.title}" details updated`
+        })
 
         return {
             status: 200,
@@ -89,10 +108,9 @@ class TaskService {
             throw new ApiError(404, 'Task no longer exists');
         };
 
-        if (this.isMemberAuthor(ctx, task) && !task) {
-            throw new ApiError(403, 'Forbidden: You must be the creator or assignee to delete this task');
-        };
-
+        if (!canDeleteTask(ctx.userRole, ctx.userId, task.creator.toString(), task.assignee)) {
+            throw new ApiError(403, 'Forbidden: You do not have permission to delete this task');
+        }
 
 
         if (task.subtasks && task.subtasks.length > 0) {
@@ -107,6 +125,16 @@ class TaskService {
         if (result.deletedCount === 0 || !result.acknowledged) {
             throw new ApiError(500, 'Failed to delete task');
         }
+
+        await WorkspaceAuditLog.create({
+            workspaceId: ctx.workspaceId,
+            resourceType: 'task',
+            resourceId: task._id,
+            action: 'deleted',
+            performedBy: ctx.userId,
+            timestamp: new Date(),
+            description: `Task titled "${task.title}" was deleted`
+        })
 
         return {
             status: 200,
@@ -137,17 +165,7 @@ class TaskService {
         const page = query.page ? parseInt(query.page, 10) : 1;
         const skip = (page - 1) * limit;
 
-        const isProjectMember = await Project.findOne({
-            _id: ctx.projectId,
-            workspaceId: ctx.workspaceId,
-            members: {
-                $in: [ctx.userId]
-            }
-        }).lean().exec();
 
-        if (!isProjectMember) {
-            throw new ApiError(403, 'Forbidden: You are not a member of this project');
-        }
 
         const findQuery: any = { projectId: ctx.projectId, workspaceId: ctx.workspaceId };
         if (query.status) {
@@ -188,13 +206,34 @@ class TaskService {
             throw new ApiError(404, 'Task not found or no longer exists');
         }
 
-        if (this.isMemberAuthor(ctx, task)) {
-            throw new ApiError(403, 'Forbidden: You must be the creator or assignee to update this task');
-        };
+
+
+        if (!canUpdateTaskStatus(ctx.userRole, ctx.userId, task.creator.toString(), task.assignees.map((a: ObjectId) => a.toString()))) {
+            throw new ApiError(403, 'Forbidden: You do not have permission to update the task status');
+        }
 
         task.status = status;
+        task.lastModifiedAt = new Date();
+        task.lastModifiedBy = ctx.userId;
+        if (status === TaskStatus.DONE) {
+            task.completedAt = new Date();
+            task.completedBy = ctx.userId;
+        }
 
         const updatedTask = await task.save();
+        if (!updatedTask) {
+            throw new ApiError(500, 'Failed to update task status');
+        }
+
+        await WorkspaceAuditLog.create({
+            workspaceId: ctx.workspaceId,
+            resourceType: 'task',
+            resourceId: updatedTask._id,
+            action: 'updated',
+            performedBy: ctx.userId,
+            timestamp: new Date(),
+            description: `Status changed to ${status}`
+        })
 
         return {
             status: 200,
@@ -203,9 +242,24 @@ class TaskService {
         }
     }
     async assignTask(ctx: TaskContext, { assigneeId }: AssignTaskInput) {
-        if (!isOwnerAdmin(ctx.userRole)) {
-            throw new ApiError(403, 'Forbidden: Only owners and admins can assign tasks');
-        };
+
+        if (!canAssignTasks(ctx.userRole)) {
+            throw new ApiError(403, 'Forbidden: You do not have permission to assign tasks');
+        }
+
+        const task = await Task.findOne({
+            _id: ctx.taskId,
+            projectId: ctx.projectId,
+            workspaceId: ctx.workspaceId
+        });
+
+        if (!task) {
+            throw new ApiError(404, 'Task no longer exists');
+        }
+
+        if (task.assignees.map((a: ObjectId) => a.toString()).includes(assigneeId)) {
+            throw new ApiError(400, 'Task is already assigned to this user');
+        }
 
         const [workspaceMember, projectMember] = await Promise.all([
             WorkspaceMember.findOne({ userId: assigneeId, workspaceId: ctx.workspaceId }).lean(),
@@ -232,22 +286,25 @@ class TaskService {
             }
         }
 
-        const updatedTask = await Task.findOneAndUpdate({
-            _id: ctx.taskId,
-            projectId: ctx.projectId,
-            workspaceId: ctx.workspaceId,
-            assignee: null,
-            // status not archived or done
-            status: {
-                $nin: [TaskStatus.ARCHIVED, TaskStatus.DONE]
-            }
-        }, {
-            $set: { assignee: assigneeId, isPersonal: false }
-        }, { new: true });
+        task.assignees.push(assigneeId);
+        task.isPersonal = false;
+
+        const updatedTask = await task.save();
 
         if (!updatedTask) {
-            throw new ApiError(404, 'Task not found, already assigned, archived, completed, or no longer exists');
+            throw new ApiError(500, 'Failed to assign task. Please try again later');
         }
+
+
+        await WorkspaceAuditLog.create({
+            workspaceId: ctx.workspaceId,
+            resourceType: 'task',
+            resourceId: updatedTask._id,
+            action: 'assigned',
+            performedBy: ctx.userId,
+            timestamp: new Date(),
+            description: `Task assigned to user with ID ${assigneeId}`
+        })
 
         return {
             status: 200,
@@ -255,33 +312,51 @@ class TaskService {
             data: updatedTask
         }
     }
-    async unassignTask(ctx: TaskContext) {
-        if (!isOwnerAdmin(ctx.userRole)) {
-            throw new ApiError(403, 'Forbidden: Only owners and admins can unassign tasks');
-        };
+    async unassignTask(ctx: TaskContext, { assigneeId }: AssignTaskInput) {
+        if (!canAssignTasks(ctx.userRole)) {
+            throw new ApiError(403, 'Forbidden: You do not have permission to unassign tasks');
+        }
 
-        const updatedTask = await Task.findOneAndUpdate({
+        const task = await Task.findOne({
             _id: ctx.taskId,
             projectId: ctx.projectId,
-            workspaceId: ctx.workspaceId,
-            assignee: { $ne: null }
-        }, {
-            $set: { assignee: null, isPersonal: true }
-        }, { new: true });
+            workspaceId: ctx.workspaceId
+        });
+
+        if (!task) {
+            throw new ApiError(404, 'Task no longer exists');
+        }
+
+        if (task.assignees.length === 0) {
+            throw new ApiError(400, 'No assignee to unassign from this task');
+        }
+
+        task.assignees = task.assignees.filter((id: ObjectId) => id.toString() !== assigneeId);
+        if (task.assignees.length === 0) {
+            task.isPersonal = true;
+        }
+
+        const updatedTask = await task.save();
 
         if (!updatedTask) {
             throw new ApiError(404, 'Task not found, no assignee to unassign, or no longer exists');
         }
+
+        await WorkspaceAuditLog.create({
+            workspaceId: ctx.workspaceId,
+            resourceType: 'task',
+            resourceId: updatedTask._id,
+            action: 'unassigned',
+            performedBy: ctx.userId,
+            timestamp: new Date(),
+            description: `Task unassigned from user with ID ${assigneeId}`
+        })
 
         return {
             status: 200,
             message: 'Task unassigned successfully',
             data: updatedTask
         }
-    }
-
-    private isMemberAuthor(ctx: TaskContext, task: any) {
-        return ctx.userRole === 'member' && task.creator.toString() !== ctx.userId && task.assignee?.toString() !== ctx.userId;
     }
 }
 

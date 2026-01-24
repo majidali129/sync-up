@@ -3,6 +3,7 @@ import { verifyJWT } from "@/middlewares/verify-jwt";
 import { verifyWorkspaceOwnerShip } from "@/middlewares/verify-workspace-ownership";
 import { Router } from "express";
 import { taskRouter } from "./task-routes";
+import { verifyProjectMembership } from "@/middlewares/verify-project-membership";
 
 
 
@@ -14,7 +15,7 @@ router.use(verifyJWT);
 
 router.route('/').post(verifyWorkspaceOwnerShip(['owner', 'admin']), createProject).get(verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjects);
 
-router.get('/:id', verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjectDetails)
+router.get('/:id', verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), verifyProjectMembership, getProjectDetails)
 
 router.post('/:id/members',
     verifyWorkspaceOwnerShip(['owner', 'admin']),
@@ -33,7 +34,7 @@ router.get('/:id/members',
 
 router.use(verifyWorkspaceOwnerShip(['owner', 'admin']))
 router.route('/:id').patch(updateProject).delete(deleteProject);
-router.route('/:id/status').patch(updateProjectStatus);
+router.route('/:id/status').patch(verifyProjectMembership, updateProjectStatus);
 
 
 export { router as projectRouter }

@@ -25,6 +25,8 @@ export interface IProject {
     endDate?: Date;
     stats: ProjectStats
     tags?: string[]
+    lastModifiedAt?: Date;
+    lastModifiedBy?: ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -33,5 +35,6 @@ export interface ProjectContext {
     userId: string;
     userRole: USER_ROLE;
     workspaceId: string;
+    isProjectMember: boolean;
     projectId?: string;
 }

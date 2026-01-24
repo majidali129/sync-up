@@ -5,13 +5,13 @@ type TaskDocument = HydratedDocument<ITask>;
 
 const taskSchema = new Schema<TaskDocument>({
     workspaceId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Workspace',
         required: [true, 'Workspace ID is required'],
         index: true
     },
     projectId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Project',
         required: [true, 'Project ID is required'],
         index: true
@@ -59,13 +59,17 @@ const taskSchema = new Schema<TaskDocument>({
         type: Boolean,
         default: true
     },
-    assignee: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        default: null
+    assignees: {
+        type: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'User'
+            }
+        ],
+        default: []
     },
     creator: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'Task creator is required']
     },
@@ -81,18 +85,32 @@ const taskSchema = new Schema<TaskDocument>({
     tags: [String],
     completedAt: Date,
     parentTask: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Task',
         default: null
     },
     subtasks: {
         type: [
             {
-                type: mongoose.Schema.Types.ObjectId,
+                type: Schema.Types.ObjectId,
                 ref: 'Task'
             }
         ],
         default: []
+    },
+    lastModifiedAt: {
+        type: Date,
+        default: Date.now
+    },
+    lastModifiedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    completedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
     }
 }, { timestamps: true });
 
