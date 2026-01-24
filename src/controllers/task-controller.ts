@@ -1,7 +1,6 @@
 import { assignTaskSchema, createTaskSchema, toggleTaskStatusSchema, updateTaskSchema } from "@/schemas/task";
 import { taskService } from "@/services/task-service";
 import { TaskContext } from "@/types/task";
-import { USER_ROLE } from "@/types/user";
 import { apiResponse } from "@/utils/api-response";
 import { asyncHandler } from "@/utils/async-handler";
 import { Request } from "express";
@@ -9,10 +8,11 @@ import { Request } from "express";
 const getCtx = (req: Request): TaskContext => {
     return {
         userId: req.user.id,
-        userRole: req.user.role as USER_ROLE,
+        userRole: req.user.workspaceMember!.role,
         projectId: req.params.projectId as string,
         workspaceId: req.params.workspaceId as string,
-        taskId: req.params.id as string
+        taskId: req.params.id as string,
+        isProjectMember: req.isProjectMember || false
     }
 }
 
@@ -45,6 +45,6 @@ export const assignTask = asyncHandler(async (req, res) => {
     return apiResponse(res, result.status, result.message, result.data);
 });
 export const unassignTask = asyncHandler(async (req, res) => {
-    const result = await taskService.unassignTask(getCtx(req));
+    const result = await taskService.unassignTask(getCtx(req), assignTaskSchema.parse(req.body));
     return apiResponse(res, result.status, result.message, result.data);
 });

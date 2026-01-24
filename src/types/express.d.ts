@@ -11,8 +11,13 @@ declare global {
                 username: string;
                 email: string;
                 fullName: string;
-                role?: USER_ROLE
-            }
+                workspaceMember?: {
+                    userId: string;
+                    workspaceId: string;
+                    role: USER_ROLE;
+                }
+            },
+            isProjectMember: boolean;
         }
     }
 }
