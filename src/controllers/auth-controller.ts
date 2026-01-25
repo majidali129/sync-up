@@ -34,7 +34,7 @@ export const signIn = asyncHandler(async (req, res) => {
     res.cookie('refresh-token', refreshToken, { httpOnly: true, sameSite: "lax", secure: config.NODE_ENV === 'production' });
 
     // send response
-    return apiResponse(res, 200, 'Signed in successfully', { user: user._id })
+    return apiResponse(res, 200, 'Signed in successfully', { user: user._id, accessToken })
 });
 
 export const signOut = asyncHandler(async (req, res) => {
@@ -60,4 +60,15 @@ export const updatePassword = asyncHandler(async (req, res) => {
 export const getCurrentUser = asyncHandler(async (req, res) => {
     const user = await authService.getCurrentUser(getCtx(req));
     return apiResponse(res, 200, 'Current user fetched successfully', { user });
+});
+
+export const refreshToken = asyncHandler(async (req, res) => {
+    const refreshToken: string = req.cookies['refresh-token'];
+    const { status, message, accessToken, refreshToken: newRefreshToken } = await authService.refreshToken(refreshToken);
+
+    res.cookie('access-token', accessToken, { httpOnly: true, sameSite: "lax", secure: config.NODE_ENV === 'production' });
+    res.cookie('refresh-token', newRefreshToken, { httpOnly: true, sameSite: "lax", secure: config.NODE_ENV === 'production' });
+
+    return apiResponse(res, status, message);
+
 })

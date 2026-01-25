@@ -4,7 +4,7 @@ import { UserContext } from "@/types/user";
 import { ApiError } from "@/utils/api-error";
 import { sendResetPasswordEmail, sendVerificationEmail } from "@/utils/email/email-actions";
 import { generateToken } from "@/utils/generate-token";
-import { generateAccessToken, generateRefreshToken } from "@/utils/jwts";
+import { generateAccessToken, generateRefreshToken, verifyToken } from "@/utils/jwts";
 import bcrypt from 'bcrypt'
 import crypto from "node:crypto";
 
@@ -114,7 +114,7 @@ class AuthService {
 
     async signInUser(signInData: SignInInput) {
         //TODO: handle sign in with invite token logic
-        const { email, password, inviteToken } = signInData;
+        const { email, password } = signInData;
 
         const user = await User.findOne({
             email
@@ -130,7 +130,7 @@ class AuthService {
 
         // generate tokens
         const accessToken = await generateAccessToken({ email, id: user._id.toString(), username: user.username })
-        const refreshToken = await generateRefreshToken({ id: user._id.toString() })
+        const refreshToken = await generateRefreshToken({ userId: user._id.toString() })
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 12); // DB only
         // update user record
         user.refreshToken = hashedRefreshToken;
@@ -219,6 +219,10 @@ class AuthService {
         user.passwordChangedAt = new Date();
 
         await user.save({ validateBeforeSave: false });
+        return {
+            status: 200,
+            message: 'Password updated successfully'
+        }
     }
     async getCurrentUser(ctx: UserContext) {
         const user = await User.findById(ctx.userId).select('_id username fullName email profilePhoto').lean().exec();
@@ -227,6 +231,39 @@ class AuthService {
     }
 
     //TODO: refresh token logic
+    async refreshToken(refreshToken: string) {
+        if (!refreshToken) {
+            throw new ApiError(401, 'Unauthorized Access. Please log in again')
+        };
+        const decodedToken = await verifyToken(refreshToken, 'refresh');
+        const { userId } = decodedToken.payload as { userId: string };
+
+        const user = await User.findOne({ _id: userId }).select('_id username email refreshToken').exec()
+        if (!user) {
+            throw new ApiError(401, 'Unauthorized Access. Please log in again');
+        };
+
+        const isTokenValid = await bcrypt.compare(refreshToken, user.refreshToken
+        );
+
+        if (!isTokenValid) {
+            throw new ApiError(401, 'Invalid refresh token. Please log in again.');
+        };
+
+        const newAccessToken = await generateAccessToken({ email: user.email, id: userId, username: user.username });
+        const newRefreshToken = await generateRefreshToken({ userId });
+
+        user.refreshToken = await bcrypt.hash(newRefreshToken, 12);
+
+        await user.save({ validateBeforeSave: false });
+
+        return {
+            status: 200,
+            message: 'Token refreshed successfully',
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        }
+    }
 }
 
 
