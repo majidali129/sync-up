@@ -4,6 +4,8 @@ import { verifyWorkspaceOwnerShip } from "@/middlewares/verify-workspace-ownersh
 import { Router } from "express";
 import { taskRouter } from "./task-routes";
 import { verifyProjectMembership } from "@/middlewares/verify-project-membership";
+import { validateBody } from "@/middlewares/validate-request";
+import { addMemberToProjectSchema, createProjectSchema, updateProjectSchema, updateProjectStatusSchema } from "@/schemas/project";
 
 
 
@@ -13,12 +15,13 @@ router.use('/:projectId/tasks', taskRouter) // Mount task routes under project r
 
 router.use(verifyJWT);
 
-router.route('/').post(verifyWorkspaceOwnerShip(['owner', 'admin']), createProject).get(verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjects);
+router.route('/').post(verifyWorkspaceOwnerShip(['owner', 'admin']), validateBody(createProjectSchema), createProject).get(verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjects);
 
 router.get('/:id', verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), verifyProjectMembership, getProjectDetails)
 
 router.post('/:id/members',
     verifyWorkspaceOwnerShip(['owner', 'admin']),
+    validateBody(addMemberToProjectSchema),
     addProjectMember
 );
 
@@ -33,8 +36,8 @@ router.get('/:id/members',
 );
 
 router.use(verifyWorkspaceOwnerShip(['owner', 'admin']))
-router.route('/:id').patch(updateProject).delete(deleteProject);
-router.route('/:id/status').patch(verifyProjectMembership, updateProjectStatus);
+router.route('/:id').patch(validateBody(updateProjectSchema), updateProject).delete(deleteProject);
+router.route('/:id/status').patch(verifyProjectMembership, validateBody(updateProjectStatusSchema), updateProjectStatus);
 
 
 export { router as projectRouter }

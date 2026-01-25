@@ -1,5 +1,5 @@
 import { config } from "@/config/env";
-import { forgotPasswordSchema, resetPasswordSchema, signInSchema, signUpSchema, updatePasswordSchema } from "@/schemas/auth";
+import { ForgotPasswordInput, forgotPasswordSchema, ResetPasswordInput, resetPasswordSchema, SignInInput, signInSchema, SignUpInput, signUpSchema, UpdatePasswordInput, updatePasswordSchema } from "@/schemas/auth";
 import { authService } from "@/services/auth-service";
 import { UserContext } from "@/types/user";
 import { apiResponse } from "@/utils/api-response";
@@ -13,7 +13,7 @@ const getCtx = (req: Request): UserContext => ({
 })
 
 export const signUp = asyncHandler(async (req, res) => {
-    const result = await authService.signUpUser(signUpSchema.parse(req.body));
+    const result = await authService.signUpUser(req.body as SignUpInput);
     const message = result.isNewUser
         ? 'Account created successfully. Please check your email to verify your account.'
         : 'A verification email has been resent to your email address. Please check your inbox.';
@@ -27,7 +27,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 })
 
 export const signIn = asyncHandler(async (req, res) => {
-    const { user, accessToken, refreshToken } = await authService.signInUser(signInSchema.parse(req.body))
+    const { user, accessToken, refreshToken } = await authService.signInUser(req.body as SignInInput)
 
     // 2. Set cookies
     res.cookie('access-token', accessToken, { httpOnly: true, sameSite: "lax", secure: config.NODE_ENV === 'production' });
@@ -46,16 +46,15 @@ export const signOut = asyncHandler(async (req, res) => {
     return apiResponse(res, 200, 'Signed out successfully', null);
 })
 export const forgotPassword = asyncHandler(async (req, res) => {
-    const result = await authService.forgotPassword(forgotPasswordSchema.parse(req.body))
+    const result = await authService.forgotPassword(req.body as ForgotPasswordInput)
     return apiResponse(res, result.status, result.message);
 })
 export const resetPassword = asyncHandler(async (req, res) => {
-    const result = await authService.resetPassword(getCtx(req), resetPasswordSchema.parse(req.body))
+    const result = await authService.resetPassword(getCtx(req), req.body as ResetPasswordInput)
     return apiResponse(res, result.status, result.message);
 })
 export const updatePassword = asyncHandler(async (req, res) => {
-    const data = updatePasswordSchema.parse(req.body)
-    await authService.updatePassword(getCtx(req), data);
+    await authService.updatePassword(getCtx(req), req.body as UpdatePasswordInput);
     return apiResponse(res, 200, 'Password updated successfully', null);
 })
 export const getCurrentUser = asyncHandler(async (req, res) => {

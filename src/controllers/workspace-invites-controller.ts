@@ -1,4 +1,4 @@
-import { acceptInviteSchema, workspaceInviteSchema } from "@/schemas/workspace-invite";
+import { AcceptInviteInput, WorkspaceInviteInput } from "@/schemas/workspace-invite";
 import { workspaceInvitesService } from "@/services/workspace-invites-service";
 import { WorkspaceInviteContext } from "@/types/workspace";
 import { apiResponse } from "@/utils/api-response";
@@ -14,12 +14,12 @@ const getCtx = (req: Request): WorkspaceInviteContext => ({
 })
 
 export const sendInvite = asyncHandler(async (req, res) => {
-    const result = await workspaceInvitesService.sendInvite(getCtx(req), workspaceInviteSchema.parse(req.body))
+    const result = await workspaceInvitesService.sendInvite(getCtx(req), req.body as WorkspaceInviteInput)
     return apiResponse(res, result.status, result.message, result.data);
 });
 
 export const acceptInvite = asyncHandler(async (req, res) => {
-    const result = await workspaceInvitesService.acceptInvite(getCtx(req), acceptInviteSchema.parse(req.body));
+    const result = await workspaceInvitesService.acceptInvite(getCtx(req), req.body as AcceptInviteInput);
     return apiResponse(res, result.status, result.message, result.data);
 });
 

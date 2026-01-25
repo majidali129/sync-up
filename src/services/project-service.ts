@@ -23,9 +23,10 @@ class ProjectService {
         const membersByDefault = [ctx.userId];
 
         if (ctx.userRole === 'admin') {
-
             const workspaceOwner = await Workspace.findById(ctx.workspaceId).select('ownerId').lean().exec();
-            membersByDefault.push(workspaceOwner?.ownerId.toString());
+            if (workspaceOwner) {
+                membersByDefault.push(workspaceOwner.ownerId.toString());
+            }
         }
 
         const project = await Project.create({
@@ -107,7 +108,7 @@ class ProjectService {
             throw new ApiError(403, 'Not authorized to delete');
         }
 
-        const linkedTasks = await Task.findOne({ projectId: project._id }).lean().exec();
+        const linkedTasks = await Task.exists({ projectId: project._id });
         if (linkedTasks) {
             throw new ApiError(400, 'Cannot delete project with existing tasks. Please delete all tasks associated with this project first.');
         }
@@ -162,26 +163,30 @@ class ProjectService {
         const skip = (page - 1) * limit;
 
         const findQuery: any = { workspaceId: ctx.workspaceId };
-
         if (query.search) {
-            findQuery.name = { $regex: query.search, $options: 'i' };
-            findQuery.description = { $regex: query.search, $options: 'i' };
+            findQuery.$or = [
+                { name: { $regex: query.search, $options: 'i' } },
+                { description: { $regex: query.search, $options: 'i' } }
+            ]
         }
 
         //! if user is owner then he can see all projects
         //! if user is admin or member then he can see only projects where he is a member of others or his created projects
         if (ctx.userRole === 'admin' || ctx.userRole === 'member') {
-            findQuery.$or = [
-                {
-                    visibility: 'public'
-                },
-                { createdBy: ctx.userId },
-                {
-                    members: {
-                        $in: [ctx.userId]
-                    }
-                }
-            ]
+            const filtersPerRole = {
+                $or: [
+                    { visibility: 'public' },
+                    { createdBy: ctx.userId },
+                    { members: { $in: [ctx.userId] } }
+                ]
+            }
+
+            if (findQuery.$or) {
+                findQuery.$and = [{ $or: findQuery.$or }, filtersPerRole];
+                delete findQuery.$or;
+            } else {
+                findQuery.$or = filtersPerRole.$or;
+            }
         }
         const [projects, total] = await Promise.all([Project.find(findQuery).populate({
             path: 'createdBy',
@@ -200,11 +205,11 @@ class ProjectService {
             }
         }
     }
-    async updateProjectStatus(ctx: ProjectContext, status: UpdateProjectStatusInput['status']) {
+    async updateProjectStatus(ctx: ProjectContext, { status }: UpdateProjectStatusInput) {
         if (!ctx.isProjectMember) {
             throw new ApiError(403, 'Forbidden: Only project members can update project status');
         }
-        const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }, { status }, { new: true }).exec();
+        const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).exec();
 
         if (!project) {
             throw new ApiError(404, 'Project not found');
@@ -243,8 +248,8 @@ class ProjectService {
 
     async addProjectMember(ctx: ProjectContext, targetUser: AddMemberToProjectInput) {
 
-        const member = await WorkspaceMember.findOne({ userId: targetUser.memberId, workspaceId: ctx.workspaceId }).lean().exec();
-        if (!member) {
+        const isMember = await WorkspaceMember.exists({ userId: targetUser.memberId, workspaceId: ctx.workspaceId });
+        if (!isMember) {
             throw new ApiError(400, 'The user you are trying to add is not a member of this workspace');
         }
 
@@ -352,7 +357,6 @@ class ProjectService {
         }
     }
 
-
     async getProjectMembers(ctx: ProjectContext) {
         const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).select('members _id').populate({
             path: 'members',
@@ -365,7 +369,7 @@ class ProjectService {
 
         return {
             status: 200,
-            message: project.members.length === 0 ? 'No members found for this project' : 'Project members retrieved successfully',
+            message: 'Project members retrieved successfully',
             data: {
                 projectId: project._id,
                 members: project.members

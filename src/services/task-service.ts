@@ -18,7 +18,7 @@ class TaskService {
         }
 
         const slug = slugify(data.title, { lower: true });
-        const existingTask = await Task.findOne({ slug, projectId: ctx.projectId, workspaceId: ctx.workspaceId }).lean().exec();
+        const existingTask = await Task.exists({ slug, projectId: ctx.projectId, workspaceId: ctx.workspaceId })
 
         if (existingTask) {
             throw new ApiError(400, 'A task with the same title already exists in this project. Please choose a different title.');
@@ -108,7 +108,7 @@ class TaskService {
             throw new ApiError(404, 'Task no longer exists');
         };
 
-        if (!canDeleteTask(ctx.userRole, ctx.userId, task.creator.toString(), task.assignee)) {
+        if (!canDeleteTask(ctx.userRole, ctx.userId, task.creator.toString())) {
             throw new ApiError(403, 'Forbidden: You do not have permission to delete this task');
         }
 
@@ -117,7 +117,7 @@ class TaskService {
             throw new ApiError(400, 'Cannot delete task with existing subtasks');
         }
 
-        if (task.assignee) {
+        if (task.assignees && task.assignees.length > 0) {
             throw new ApiError(400, 'Cannot delete task assigned to a user');
         }
 
@@ -148,7 +148,7 @@ class TaskService {
             _id: ctx.taskId,
             projectId: ctx.projectId,
             workspaceId: ctx.workspaceId
-        }).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).populate({ path: 'assignee', select: '_id username fullName email profilePhoto' }).lean().exec();
+        }).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).populate({ path: 'assignees', select: '_id username fullName profilePhoto' }).lean().exec();
 
         if (!task) {
             throw new ApiError(404, 'Task not found');
@@ -161,29 +161,58 @@ class TaskService {
     }
 
     async getTasks(ctx: TaskContext, query: { limit?: string, page?: string, status?: string, search?: string }) {
+
         const limit = query.limit ? parseInt(query.limit, 10) : +config.DEFAULT_RESPONSE_LIMIT;
         const page = query.page ? parseInt(query.page, 10) : 1;
         const skip = (page - 1) * limit;
 
+        const findQuery: any = {
+            projectId: ctx.projectId,
+            workspaceId: ctx.workspaceId
+        };
 
-
-        const findQuery: any = { projectId: ctx.projectId, workspaceId: ctx.workspaceId };
         if (query.status) {
             findQuery.status = query.status;
         }
-        if (query.search) {
-            findQuery.title = { $regex: query.search, $options: 'i' };
-            findQuery.description = { $regex: query.search, $options: 'i' };
+
+        // assignees is an array of ObjectIds
+        if (ctx.userRole !== 'owner') {
+            findQuery.$or = [
+                { creator: ctx.userId },
+                {
+                    assignees: {
+                        $in: [ctx.userId]
+                    }
+                }
+            ];
         }
+
+        if (query.search) {
+            const queryFilters = {
+                $or: [
+                    { title: { $regex: query.search, $options: 'i' } },
+                    { description: { $regex: query.search, $options: 'i' } }
+                ]
+            };
+
+            if (findQuery.$or) {
+                findQuery.$and = [{ $or: findQuery.$or },
+                    queryFilters
+                ];
+                delete findQuery.$or;
+            } else {
+                findQuery.$or = queryFilters.$or;
+            }
+        };
+
+
 
         // if owner in workspace => see all tasks across workspace
         // if admin => see tasks created by or assigned to him
         // if member => see tasks created by or assigned to him
 
-        if (ctx.userRole !== 'owner') {
-            findQuery.$or = [{ creator: ctx.userId }, { assignee: ctx.userId }];
-        }
-        const [tasks, total] = await Promise.all([Task.find(findQuery).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).skip(skip).limit(limit)
+
+        const [tasks, total] = await Promise.all([Task.find(findQuery).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).skip(skip).limit(limit).lean()
             ,
         Task.countDocuments(findQuery)]);
 
@@ -282,7 +311,7 @@ class TaskService {
                 throw new ApiError(403, `Admins cannot assign tasks to owners`);
             }
             if (assigneeId === ctx.userId) {
-                throw new ApiError(403, `You cannot assign tasks to themselves`);
+                throw new ApiError(403, `Admins cannot assign tasks to themselves`);
             }
         }
 

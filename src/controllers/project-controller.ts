@@ -1,4 +1,4 @@
-import { addMemberToProjectSchema, createProjectSchema, updateProjectSchema, updateProjectStatusSchema } from "@/schemas/project";
+import { AddMemberToProjectInput, CreateProjectInput, UpdateProjectInput, UpdateProjectStatusInput } from "@/schemas/project";
 import { projectService } from "@/services/project-service"
 import { ProjectContext } from "@/types/project";
 import { apiResponse } from "@/utils/api-response";
@@ -19,11 +19,11 @@ const getCtx = (req: Request): ProjectContext => {
 
 export const createProject = asyncHandler(async (req, res) => {
 
-    const result = await projectService.createProject(getCtx(req), createProjectSchema.parse(req.body))
+    const result = await projectService.createProject(getCtx(req), req.body as CreateProjectInput)
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const updateProject = asyncHandler(async (req, res) => {
-    const result = await projectService.updateProject(getCtx(req), updateProjectSchema.parse(req.body))
+    const result = await projectService.updateProject(getCtx(req), req.body as UpdateProjectInput)
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const deleteProject = asyncHandler(async (req, res) => {
@@ -31,7 +31,7 @@ export const deleteProject = asyncHandler(async (req, res) => {
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const updateProjectStatus = asyncHandler(async (req, res) => {
-    const result = await projectService.updateProjectStatus(getCtx(req), updateProjectStatusSchema.parse(req.body).status);
+    const result = await projectService.updateProjectStatus(getCtx(req), req.body as UpdateProjectStatusInput);
     return apiResponse(res, result.status, result.message, result.data)
 })
 
@@ -46,7 +46,7 @@ export const getProjects = asyncHandler(async (req, res) => {
 
 
 export const addProjectMember = asyncHandler(async (req, res) => {
-    const result = await projectService.addProjectMember(getCtx(req), addMemberToProjectSchema.parse(req.body))
+    const result = await projectService.addProjectMember(getCtx(req), req.body as AddMemberToProjectInput)
     return apiResponse(res, result.status, result.message, result.data)
 })
 

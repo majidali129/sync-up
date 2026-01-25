@@ -4,6 +4,8 @@ import { Router } from "express";
 import { inviteRouter } from "./invite-routes";
 import { projectRouter } from "./project-routes";
 import { verifyWorkspaceOwnerShip } from "@/middlewares/verify-workspace-ownership";
+import { validateBody } from "@/middlewares/validate-request";
+import { createWorkspaceSchema, updateWorkspaceSchema } from "@/schemas/workspace";
 
 
 const router = Router()
@@ -12,10 +14,10 @@ router.use('/:workspaceId/invites', inviteRouter) // Mount invite routes under w
 router.use('/:workspaceId/projects', projectRouter) // Mount project routes under workspace routes i.e. /workspaces/:workspaceId/projects
 
 router.use(verifyJWT);
-router.route('/').post(createWorkspace).get(getAllWorkspaces);
+router.route('/').post(validateBody(createWorkspaceSchema), createWorkspace).get(getAllWorkspaces);
 router.route('/:workspaceId')
     .get(verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getWorkspaceDetails)
-    .patch(verifyWorkspaceOwnerShip(['owner']), updateWorkspace)
+    .patch(verifyWorkspaceOwnerShip(['owner']), validateBody(updateWorkspaceSchema), updateWorkspace)
     .delete(verifyWorkspaceOwnerShip(['owner']), deleteWorkspace);
 
 export { router as workspaceRouter }

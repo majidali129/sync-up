@@ -1,4 +1,4 @@
-import { assignTaskSchema, createTaskSchema, toggleTaskStatusSchema, updateTaskSchema } from "@/schemas/task";
+import { AssignTaskInput, assignTaskSchema, CreateTaskInput, createTaskSchema, ToggleTaskStatusInput, toggleTaskStatusSchema, UpdateTaskInput, updateTaskSchema } from "@/schemas/task";
 import { taskService } from "@/services/task-service";
 import { TaskContext } from "@/types/task";
 import { apiResponse } from "@/utils/api-response";
@@ -17,11 +17,11 @@ const getCtx = (req: Request): TaskContext => {
 }
 
 export const createTask = asyncHandler(async (req, res) => {
-    const result = await taskService.createTask(getCtx(req), createTaskSchema.parse(req.body))
+    const result = await taskService.createTask(getCtx(req), req.body as CreateTaskInput)
     return apiResponse(res, result.status, result.message, result.data);
 });
 export const updateTask = asyncHandler(async (req, res) => {
-    const result = await taskService.updateTask(getCtx(req), updateTaskSchema.parse(req.body))
+    const result = await taskService.updateTask(getCtx(req), req.body as UpdateTaskInput)
     return apiResponse(res, result.status, result.message, result.data);
 });
 export const deleteTask = asyncHandler(async (req, res) => {
@@ -37,14 +37,15 @@ export const getTasks = asyncHandler(async (req, res) => {
     return apiResponse(res, result.status, result.message, result.data);
 });
 export const toggleTaskStatus = asyncHandler(async (req, res) => {
-    const result = await taskService.toggleTaskStatus(getCtx(req), toggleTaskStatusSchema.parse(req.body));
+    const result = await taskService.toggleTaskStatus(getCtx(req), req.body as ToggleTaskStatusInput
+    );
     return apiResponse(res, result.status, result.message, result.data);
 });
 export const assignTask = asyncHandler(async (req, res) => {
-    const result = await taskService.assignTask(getCtx(req), assignTaskSchema.parse(req.body));
+    const result = await taskService.assignTask(getCtx(req), req.body as AssignTaskInput);
     return apiResponse(res, result.status, result.message, result.data);
 });
 export const unassignTask = asyncHandler(async (req, res) => {
-    const result = await taskService.unassignTask(getCtx(req), assignTaskSchema.parse(req.body));
+    const result = await taskService.unassignTask(getCtx(req), req.body as AssignTaskInput);
     return apiResponse(res, result.status, result.message, result.data);
 });

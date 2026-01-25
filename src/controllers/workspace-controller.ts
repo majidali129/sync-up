@@ -1,4 +1,4 @@
-import { createWorkspaceSchema, updateWorkspaceSchema } from "@/schemas/workspace";
+import { CreateWorkspaceInput, UpdateWorkspaceInput } from "@/schemas/workspace";
 import workspaceService from "@/services/workspace-service";
 import { WorkspaceContext } from "@/types/workspace";
 import { apiResponse } from "@/utils/api-response";
@@ -8,18 +8,17 @@ import { Request } from "express";
 const getCtx = (req: Request): WorkspaceContext => {
     return {
         userId: req.user.id,
-        userRole: req.user.workspaceMember!.role,
         workspaceId: req.params.workspaceId as string,
     }
 }
 
 
 export const createWorkspace = asyncHandler(async (req, res) => {
-    const result = await workspaceService.createWorkspace(getCtx(req), createWorkspaceSchema.parse(req.body));
+    const result = await workspaceService.createWorkspace(getCtx(req), req.body as CreateWorkspaceInput);
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const updateWorkspace = asyncHandler(async (req, res) => {
-    const result = await workspaceService.updateWorkspace(getCtx(req), updateWorkspaceSchema.parse(req.body));
+    const result = await workspaceService.updateWorkspace(getCtx(req), req.body as UpdateWorkspaceInput);
     return apiResponse(res, result.status, result.message, result.data)
 })
 export const deleteWorkspace = asyncHandler(async (req, res) => {

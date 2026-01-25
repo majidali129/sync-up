@@ -1,6 +1,8 @@
 
 import { forgotPassword, getCurrentUser, resetPassword, signIn, signOut, signUp, updatePassword, verifyEmail } from "@/controllers/auth-controller";
+import { validateBody } from "@/middlewares/validate-request";
 import { verifyJWT } from "@/middlewares/verify-jwt";
+import { forgotPasswordSchema, resetPasswordSchema, signInSchema, signUpSchema, updatePasswordSchema } from "@/schemas/auth";
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 
@@ -34,13 +36,13 @@ const forgotPasswordLimiter = rateLimit({
 const router = Router()
 
 
-router.post('/sign-up', signUp)
+router.post('/sign-up', validateBody(signUpSchema), signUp)
 router.post('/verify-email', verifyEmail)
-router.post('/sign-in', signInLimiter, signIn)
-router.post('/forgot-password', forgotPasswordLimiter, forgotPassword)
-router.post('/reset-password', resetPassword)
+router.post('/sign-in', signInLimiter, validateBody(signInSchema), signIn)
+router.post('/forgot-password', forgotPasswordLimiter, validateBody(forgotPasswordSchema), forgotPassword)
+router.post('/reset-password', validateBody(resetPasswordSchema), resetPassword)
 router.use(verifyJWT);
-router.post('/update-password', updatePassword)
+router.post('/update-password', validateBody(updatePasswordSchema), updatePassword)
 router.post('/sign-out', signOut)
 router.get('/current-user', getCurrentUser)
 

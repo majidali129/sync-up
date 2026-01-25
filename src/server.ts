@@ -7,6 +7,7 @@ import { createServer } from 'http'
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { globalErrorHandler } from './middlewares/global-error-handler';
 
 const corsOptions: CorsOptions = {
     methods: ["GET", "POST", "DELETE", "PATCH", "HEAD"],
@@ -54,3 +55,4 @@ app.use(cookieParser()).use(morgan('dev')).use(express.urlencoded({ extended: tr
 app.use('/api', apiLimiter, appRouter)
 
 // ! Global Middleware for Errors
+app.use(globalErrorHandler)

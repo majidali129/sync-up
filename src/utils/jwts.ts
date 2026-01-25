@@ -16,9 +16,16 @@ export const generateRefreshToken = async (payload: { id: string }) => {
     return await new SignJWT(payload).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime(config.REFRESH_TOKEN_EXPIRY).sign(refreshTokenKey)
 };
 
+//TODO: Implement refresh token function
+export const refreshToken = async (token: string) => { }
 
 export const verifyToken = async (token: string, type: 'access' | 'refresh') => {
-    const secret = type === 'access' ? config.ACCESS_TOKEN_SECRET : config.REFRESH_TOKEN_SECRET;
-    const tokenKey = new TextEncoder().encode(secret);
-    return await jwtVerify(token, tokenKey)
+    try {
+        const secret = type === 'access' ? config.ACCESS_TOKEN_SECRET : config.REFRESH_TOKEN_SECRET;
+        const tokenKey = new TextEncoder().encode(secret);
+        return await jwtVerify(token, tokenKey)
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        throw error;
+    }
 };
