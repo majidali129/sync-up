@@ -1,5 +1,5 @@
 import { config } from "@/config/env";
-import { ForgotPasswordInput, forgotPasswordSchema, ResetPasswordInput, resetPasswordSchema, SignInInput, signInSchema, SignUpInput, signUpSchema, UpdatePasswordInput, updatePasswordSchema } from "@/schemas/auth";
+import { ForgotPasswordInput, ResetPasswordInput, SignInInput, SignUpInput, UpdatePasswordInput } from "@/schemas/auth";
 import { authService } from "@/services/auth-service";
 import { UserContext } from "@/types/user";
 import { apiResponse } from "@/utils/api-response";
