@@ -1,11 +1,11 @@
 import { config } from "@/config/env";
 import { Project } from "@/models/project-model";
 import { Task } from "@/models/task-model";
-import { WorkspaceAuditLog } from "@/models/workspace-audit-log";
 import { WorkspaceMember } from "@/models/workspace-member";
 import { AssignTaskInput, CreateTaskInput, ToggleTaskStatusInput, UpdateTaskInput } from "@/schemas/task";
 import { TaskContext, TaskStatus } from "@/types/task";
 import { ApiError } from "@/utils/api-error";
+import { performAudit } from "@/utils/perform-audit";
 import { canAssignTasks, canDeleteTask, canEditTaskContent, canUpdateTaskStatus } from "@/utils/permissions";
 import { ObjectId } from "mongoose";
 import slugify from "slugify";
@@ -36,17 +36,7 @@ class TaskService {
             throw new ApiError(500, 'Failed to create task');
         };
 
-
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'task',
-            resourceId: newTask._id,
-            action: 'created',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Task titled "${newTask.title}" was created`
-        })
-
+        await performAudit(ctx.workspaceId, 'task', newTask._id.toString(), 'created', ctx.userId, `Task titled "${newTask.title}" was created`)
 
 
         return {
@@ -79,16 +69,7 @@ class TaskService {
             throw new ApiError(500, 'Failed to update task');
         }
 
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'task',
-            resourceId: updatedTask._id,
-            action: 'updated',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Task titled "${updatedTask.title}" details updated`
-        })
-
+        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'updated', ctx.userId, `Task titled "${updatedTask.title}" details updated`)
         return {
             status: 200,
             message: 'Task updated successfully',
@@ -126,16 +107,7 @@ class TaskService {
             throw new ApiError(500, 'Failed to delete task');
         }
 
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'task',
-            resourceId: task._id,
-            action: 'deleted',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Task titled "${task.title}" was deleted`
-        })
-
+        await performAudit(ctx.workspaceId, 'task', task._id.toString(), 'deleted', ctx.userId, `Task titled "${task.title}" was deleted`)
         return {
             status: 200,
             message: 'Task deleted successfully',
@@ -253,17 +225,7 @@ class TaskService {
         if (!updatedTask) {
             throw new ApiError(500, 'Failed to update task status');
         }
-
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'task',
-            resourceId: updatedTask._id,
-            action: 'updated',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Status changed to ${status}`
-        })
-
+        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'updated', ctx.userId, `Status changed to ${status}`)
         return {
             status: 200,
             message: 'Task status updated successfully',
@@ -324,17 +286,7 @@ class TaskService {
             throw new ApiError(500, 'Failed to assign task. Please try again later');
         }
 
-
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'task',
-            resourceId: updatedTask._id,
-            action: 'assigned',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Task assigned to user with ID ${assigneeId}`
-        })
-
+        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'assign', ctx.userId, `Task assigned to user with ID ${assigneeId}`)
         return {
             status: 200,
             message: 'Task assigned successfully',
@@ -370,17 +322,7 @@ class TaskService {
         if (!updatedTask) {
             throw new ApiError(404, 'Task not found, no assignee to unassign, or no longer exists');
         }
-
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'task',
-            resourceId: updatedTask._id,
-            action: 'unassigned',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Task unassigned from user with ID ${assigneeId}`
-        })
-
+        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'unassign', ctx.userId, `Task unassigned from user with ID ${assigneeId}`)
         return {
             status: 200,
             message: 'Task unassigned successfully',

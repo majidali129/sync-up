@@ -7,9 +7,8 @@ import { ProjectContext } from "@/types/project";
 import { Workspace } from "@/models/workspace-model";
 import slugify from "slugify";
 import { canManageProject, canViewProject } from "@/utils/permissions";
-import { WorkspaceAuditLog } from "@/models/workspace-audit-log";
-import { ObjectId } from "mongoose";
 import { Task } from "@/models/task-model";
+import { performAudit } from "@/utils/perform-audit";
 
 
 class ProjectService {
@@ -22,7 +21,7 @@ class ProjectService {
         }
         const membersByDefault = [ctx.userId];
 
-        if (ctx.userRole === 'admin') {
+        if (ctx.userRole === 'owner') {
             const workspaceOwner = await Workspace.findById(ctx.workspaceId).select('ownerId').lean().exec();
             if (workspaceOwner) {
                 membersByDefault.push(workspaceOwner.ownerId.toString());
@@ -41,15 +40,7 @@ class ProjectService {
             throw new ApiError(500, 'Failed to create project. Please try again later');
         }
 
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'project',
-            resourceId: project._id,
-            action: 'created',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Project titled "${project.name}" was created`
-        })
+        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'created', ctx.userId, `Project titled "${project.name}" was created`)
 
         return {
             status: 201,
@@ -81,15 +72,8 @@ class ProjectService {
             throw new ApiError(500, 'Failed to update project. Please try again later');
         }
 
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'project',
-            resourceId: project._id,
-            action: 'updated',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Project details updated`
-        })
+
+        await performAudit(ctx.workspaceId, 'project', updatedProject._id.toString(), 'updated', ctx.userId, `Project details updated`)
 
         return {
             status: 200,
@@ -118,15 +102,7 @@ class ProjectService {
         if (deletedProject.deletedCount === 0) {
             throw new ApiError(500, 'Failed to delete project. Please try again later');
         }
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'project',
-            resourceId: project._id,
-            action: 'deleted',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Project titled "${project.name}" was deleted`
-        })
+        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'deleted', ctx.userId, `Project titled "${project.name}" was deleted`)
         return {
             status: 200,
             message: 'Project deleted successfully',
@@ -228,15 +204,7 @@ class ProjectService {
             throw new ApiError(500, 'Failed to update project status. Please try again later');
         }
 
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'project',
-            resourceId: project._id,
-            action: 'updated',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Project status updated to ${status}`
-        })
+        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'updated', ctx.userId, `Project status updated to ${status}`)
 
 
         return {
@@ -278,15 +246,7 @@ class ProjectService {
             throw new ApiError(500, 'Failed to add member to project. Please try again later');
         }
 
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'project',
-            resourceId: project._id,
-            action: 'member_added',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Member with ID ${targetUser.memberId} was added to the project`
-        })
+        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'member_added', ctx.userId, `Member with ID ${targetUser.memberId} was added to the project`)
 
         return {
             status: 200,
@@ -311,45 +271,35 @@ class ProjectService {
             throw new ApiError(400, 'Cannot remove project creator from project members');
         }
 
-        const newMembers = project.members.filter((memberId: ObjectId) => memberId.toString() !== targetUserId);
+        const updatedProject = await Project.findOneAndUpdate({
+            _id: ctx.projectId,
+            workspaceId: ctx.workspaceId
+        },
+            {
+                $pull: { members: targetUserId },
+                lastModifiedAt: new Date(),
+                lastModifiedBy: ctx.userId
+            },
+            { new: true }
+        ).lean().exec();
 
-        if (newMembers.length === project.members.length) {
-            throw new ApiError(400, 'The user is not a member of this project');
-        }
-
-        project.members = newMembers;
-        project.lastModifiedAt = new Date();
-        project.lastModifiedBy = ctx.userId;
-        const updatedProject = await project.save({ validateBeforeSave: false });
         if (!updatedProject) {
             throw new ApiError(500, 'Failed to remove member from project. Please try again later');
         }
 
-        //TODO: unassign all tasks assigned to this user in this project
-        const linkedTasks = await Task.find({
-            projectId: ctx.projectId,
-            assignees: {
-                $in: [targetUserId]
-            }
+        // unassign all tasks assigned to this user in this project
+
+        await Task.updateMany({
+            projectId: ctx.projectId
+        }, {
+            $pull: {
+                assignees: targetUserId
+            },
+            lastModifiedAt: new Date(),
+            lastModifiedBy: ctx.userId
         });
 
-        for (const task of linkedTasks) {
-            task.assignees = task.assignees?.filter((assigneeId: ObjectId) => assigneeId.toString() !== targetUserId);
-            task.lastModifiedAt = new Date();
-            task.lastModifiedBy = ctx.userId;
-            await task.save({ validateBeforeSave: false });
-        }
-
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'project',
-            resourceId: project._id,
-            action: 'member_removed',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Member with ID ${targetUserId} was removed from the project`
-        })
-
+        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'member_removed', ctx.userId, `Member with ID ${targetUserId} was removed from the project`)
         return {
             status: 200,
             message: 'Member removed from project successfully',

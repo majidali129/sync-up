@@ -5,8 +5,8 @@ import { WorkspaceMember } from "@/models/workspace-member";
 import { WorkspaceContext } from "@/types/workspace";
 import { config } from "@/config/env";
 import { ApiError } from "@/utils/api-error";
-import { WorkspaceAuditLog } from "@/models/workspace-audit-log";
 import { canManageWorkspace } from "@/utils/permissions";
+import { performAudit } from "@/utils/perform-audit";
 
 
 class WorkspaceService {
@@ -38,26 +38,9 @@ class WorkspaceService {
             throw new ApiError(500, 'Failed to create workspace member');
         }
 
-
         await Promise.all([
-            WorkspaceAuditLog.create({
-                workspaceId: ctx.workspaceId,
-                resourceType: 'workspace',
-                resourceId: newWorkspace._id,
-                action: 'created',
-                performedBy: ctx.userId,
-                timestamp: new Date(),
-                description: `Workspace titled "${newWorkspace.name}" was created`
-            }),
-            WorkspaceAuditLog.create({
-                workspaceId: ctx.workspaceId,
-                resourceType: 'member',
-                resourceId: workspaceMember._id,
-                action: 'member_added',
-                performedBy: ctx.userId,
-                timestamp: new Date(),
-                description: `Member with ID "${workspaceMember.userId}" was added as owner to the workspace`
-            })
+            performAudit(ctx.workspaceId, 'workspace', newWorkspace._id.toString(), 'created', ctx.userId, `Workspace titled "${newWorkspace.name}" was created`),
+            performAudit(ctx.workspaceId, 'member', workspaceMember._id.toString(), 'member_added', ctx.userId, `Member with ID "${workspaceMember.userId}" was added as owner to the workspace`)
         ])
 
         return {
@@ -92,15 +75,7 @@ class WorkspaceService {
         if (!updatedWorkspace) {
             throw new ApiError(500, 'Failed to update workspace');
         }
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'workspace',
-            resourceId: updatedWorkspace._id,
-            action: 'updated',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Workspace titled "${updatedWorkspace.name}" was updated`
-        })
+        await performAudit(ctx.workspaceId, 'workspace', updatedWorkspace._id.toString(), 'updated', ctx.userId, `Workspace titled "${updatedWorkspace.name}" was updated`)
 
         return {
             status: 200,
@@ -136,15 +111,8 @@ class WorkspaceService {
             throw new ApiError(500, 'Failed to delete workspace');
         }
 
-        await WorkspaceAuditLog.create({
-            workspaceId: ctx.workspaceId,
-            resourceType: 'workspace',
-            resourceId: workspace._id,
-            action: 'deleted',
-            performedBy: ctx.userId,
-            timestamp: new Date(),
-            description: `Workspace titled "${workspace.name}" was deleted`
-        })
+        await performAudit(ctx.workspaceId, 'workspace', workspace._id.toString(), 'deleted', ctx.userId, `Workspace titled "${workspace.name}" was deleted`)
+
         return {
             status: 200,
             message: 'Workspace deleted successfully',
