@@ -1,17 +1,17 @@
 import { ITask, TaskStatus } from "@/types/task";
-import mongoose, { HydratedDocument, model, Schema } from "mongoose";
+import mongoose, { HydratedDocument, Model, model, Schema, Types } from "mongoose";
 
 type TaskDocument = HydratedDocument<ITask>;
 
 const taskSchema = new Schema<TaskDocument>({
     workspaceId: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'Workspace',
         required: [true, 'Workspace ID is required'],
         index: true
     },
     projectId: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'Project',
         required: [true, 'Project ID is required'],
         index: true
@@ -55,21 +55,17 @@ const taskSchema = new Schema<TaskDocument>({
         required: [true, 'Task status is required'],
         index: true
     },
-    isPersonal: {
+    isPrivate: {
         type: Boolean,
         default: true
     },
-    assignees: {
-        type: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'User'
-            }
-        ],
-        default: []
+    assignee: {
+        type: Types.ObjectId,
+        ref: 'User',
+        default: null
     },
     creator: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'User',
         required: [true, 'Task creator is required']
     },
@@ -83,16 +79,15 @@ const taskSchema = new Schema<TaskDocument>({
         required: [true, 'Due date is required']
     },
     tags: [String],
-    completedAt: Date,
     parentTask: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'Task',
         default: null
     },
     subtasks: {
         type: [
             {
-                type: Schema.Types.ObjectId,
+                type: Types.ObjectId,
                 ref: 'Task'
             }
         ],
@@ -103,17 +98,21 @@ const taskSchema = new Schema<TaskDocument>({
         default: Date.now
     },
     lastModifiedBy: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'User',
         default: null
     },
     completedBy: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'User',
+        default: null
+    },
+    completedAt: {
+        type: Date,
         default: null
     }
 }, { timestamps: true });
 
 
 
-export const Task = mongoose.models?.Task || model<TaskDocument>('Task', taskSchema);
+export const Task = (mongoose.models?.Task as Model<TaskDocument>) || model<TaskDocument>('Task', taskSchema);

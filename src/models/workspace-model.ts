@@ -1,5 +1,5 @@
 import { IWorkspace, IWorkspaceSettings } from "@/types/workspace";
-import mongoose, { HydratedDocument, model, Schema } from "mongoose";
+import mongoose, { HydratedDocument, Model, model, Schema, Types } from "mongoose";
 
 
 
@@ -55,7 +55,7 @@ const workspaceSchema = new Schema<WorkspaceDocument>({
         default: '🏢'
     },
     ownerId: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'User',
         index: true,
         required: [true, 'Owner ID is required']
@@ -78,4 +78,4 @@ const workspaceSchema = new Schema<WorkspaceDocument>({
     }
 }, { timestamps: true });
 
-export const Workspace = mongoose.models?.workspace || model<WorkspaceDocument>('Workspace', workspaceSchema);
+export const Workspace = (mongoose.models?.workspace as Model<WorkspaceDocument>) || model<WorkspaceDocument>('Workspace', workspaceSchema);

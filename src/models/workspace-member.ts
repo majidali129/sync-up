@@ -1,5 +1,5 @@
 import { IWorkspaceMember } from "@/types/workspace";
-import mongoose, { HydratedDocument, model, Schema } from "mongoose";
+import mongoose, { HydratedDocument, Model, model, Schema } from "mongoose";
 
 type WorkspaceMemberDocument = HydratedDocument<IWorkspaceMember>
 
@@ -26,4 +26,4 @@ const workspaceMemberSchema = new Schema<WorkspaceMemberDocument>({
     },
 }, { timestamps: true });
 
-export const WorkspaceMember = mongoose.models?.WorkspaceMember || model<WorkspaceMemberDocument>('WorkspaceMember', workspaceMemberSchema);
+export const WorkspaceMember = (mongoose.models?.WorkspaceMember as Model<WorkspaceMemberDocument>) || model<WorkspaceMemberDocument>('WorkspaceMember', workspaceMemberSchema);

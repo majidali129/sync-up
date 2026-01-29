@@ -5,9 +5,7 @@ import { WorkspaceMember } from "@/models/workspace-member";
 import { AssignTaskInput, CreateTaskInput, ToggleTaskStatusInput, UpdateTaskInput } from "@/schemas/task";
 import { TaskContext, TaskStatus } from "@/types/task";
 import { ApiError } from "@/utils/api-error";
-import { performAudit } from "@/utils/perform-audit";
 import { canAssignTasks, canDeleteTask, canEditTaskContent, canUpdateTaskStatus } from "@/utils/permissions";
-import { ObjectId } from "mongoose";
 import slugify from "slugify";
 
 class TaskService {
@@ -36,9 +34,6 @@ class TaskService {
             throw new ApiError(500, 'Failed to create task');
         };
 
-        await performAudit(ctx.workspaceId, 'task', newTask._id.toString(), 'created', ctx.userId, `Task titled "${newTask.title}" was created`)
-
-
         return {
             status: 201,
             message: 'Task created successfully',
@@ -50,7 +45,7 @@ class TaskService {
             _id: ctx.taskId,
             projectId: ctx.projectId,
             workspaceId: ctx.workspaceId
-        });
+        }).select('creator _id').lean().exec();
 
         if (!task) {
             throw new ApiError(404, 'Task no longer exists');
@@ -59,17 +54,17 @@ class TaskService {
         if (!canEditTaskContent(ctx.userRole, ctx.userId, task.creator.toString())) {
             throw new ApiError(403, 'Forbidden: You do not have permission to edit this task');
         }
-
-        Object.assign(task, data);
-        task.lastModifiedAt = new Date();
-        task.lastModifiedBy = ctx.userId;
-
-        const updatedTask = await task.save();
+        const updatedTask = await Task.findByIdAndUpdate(ctx.taskId, {
+            $set: {
+                ...data,
+                lastModifiedAt: new Date(),
+                lastModifiedBy: ctx.userId
+            }
+        }, { new: true, runValidators: true }).lean().exec();
         if (!updatedTask) {
             throw new ApiError(500, 'Failed to update task');
         }
 
-        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'updated', ctx.userId, `Task titled "${updatedTask.title}" details updated`)
         return {
             status: 200,
             message: 'Task updated successfully',
@@ -77,20 +72,21 @@ class TaskService {
         }
     }
     async deleteTask(ctx: TaskContext) {
-        //TODO: Don't delete if subtasks exist OR assigned to someone else
-        // only add creator check if role is member
         const task = await Task.findOne({
             _id: ctx.taskId,
             projectId: ctx.projectId,
             workspaceId: ctx.workspaceId,
-        });
+        })
+            .select('creator subtasks assignee title')
+            .lean()
+            .exec();
 
         if (!task) {
             throw new ApiError(404, 'Task no longer exists');
         };
 
-        if (!canDeleteTask(ctx.userRole, ctx.userId, task.creator.toString())) {
-            throw new ApiError(403, 'Forbidden: You do not have permission to delete this task');
+        if (!canDeleteTask(ctx.userRole, ctx.userId, task.creator)) {
+            throw new ApiError(403, 'Forbidden: Insufficient permissions');
         }
 
 
@@ -98,16 +94,16 @@ class TaskService {
             throw new ApiError(400, 'Cannot delete task with existing subtasks');
         }
 
-        if (task.assignees && task.assignees.length > 0) {
-            throw new ApiError(400, 'Cannot delete task assigned to a user');
+        if (task.assignee) {
+            throw new ApiError(400, 'Cannot delete task assigned to other users');
         }
 
-        const result = await task.deleteOne();
-        if (result.deletedCount === 0 || !result.acknowledged) {
+        const result = await Task.deleteOne({ _id: ctx.taskId });
+
+        if (result.deletedCount === 0) {
             throw new ApiError(500, 'Failed to delete task');
         }
 
-        await performAudit(ctx.workspaceId, 'task', task._id.toString(), 'deleted', ctx.userId, `Task titled "${task.title}" was deleted`)
         return {
             status: 200,
             message: 'Task deleted successfully',
@@ -120,7 +116,7 @@ class TaskService {
             _id: ctx.taskId,
             projectId: ctx.projectId,
             workspaceId: ctx.workspaceId
-        }).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).populate({ path: 'assignees', select: '_id username fullName profilePhoto' }).lean().exec();
+        }).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).populate({ path: 'assignee', select: '_id username fullName profilePhoto' }).lean().exec();
 
         if (!task) {
             throw new ApiError(404, 'Task not found');
@@ -184,7 +180,7 @@ class TaskService {
         // if member => see tasks created by or assigned to him
 
 
-        const [tasks, total] = await Promise.all([Task.find(findQuery).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).skip(skip).limit(limit).lean()
+        const [tasks, total] = await Promise.all([Task.find(findQuery).populate({ path: 'creator', select: '_id username fullName email profilePhoto' }).skip(skip).limit(limit).lean().exec()
             ,
         Task.countDocuments(findQuery)]);
 
@@ -197,35 +193,54 @@ class TaskService {
             }
         }
     }
-    async toggleTaskStatus(ctx: TaskContext, { status }: ToggleTaskStatusInput) {
+
+    async toggleTaskStatus(ctx: TaskContext, { status, actualTime }: ToggleTaskStatusInput) {
         const task = await Task.findOne({
             _id: ctx.taskId,
             projectId: ctx.projectId,
             workspaceId: ctx.workspaceId
-        });
+        }).select('creator assignee').lean().exec();
+
         if (!task) {
             throw new ApiError(404, 'Task not found or no longer exists');
         }
 
-
-
-        if (!canUpdateTaskStatus(ctx.userRole, ctx.userId, task.creator.toString(), task.assignees.map((a: ObjectId) => a.toString()))) {
+        if (!canUpdateTaskStatus(ctx.userRole, ctx.userId, task.creator, task.assignee)) {
             throw new ApiError(403, 'Forbidden: You do not have permission to update the task status');
         }
 
-        task.status = status;
-        task.lastModifiedAt = new Date();
-        task.lastModifiedBy = ctx.userId;
-        if (status === TaskStatus.DONE) {
-            task.completedAt = new Date();
-            task.completedBy = ctx.userId;
-        }
+        const update: any = {
+            $set: {
+                status,
+                lastModifiedAt: new Date(),
+                lastModifiedBy: ctx.userId,
+            }
+        };
 
-        const updatedTask = await task.save();
+        if (status === TaskStatus.DONE) {
+            update.$set.completedAt = new Date();
+            update.$set.completedBy = ctx.userId;
+            if (actualTime) {
+                update.$set.actualTime = actualTime;
+            }
+        } else {
+            update.$unset = {
+                completedAt: null,
+                completedBy: null,
+                actualTime: null
+            };
+        }
+        const updatedTask = await Task.findOneAndUpdate({
+            _id: ctx.taskId,
+            projectId: ctx.projectId,
+            workspaceId: ctx.workspaceId
+        },
+            update, { new: true }
+        ).lean().exec();
+
         if (!updatedTask) {
             throw new ApiError(500, 'Failed to update task status');
         }
-        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'updated', ctx.userId, `Status changed to ${status}`)
         return {
             status: 200,
             message: 'Task status updated successfully',
@@ -248,8 +263,8 @@ class TaskService {
             throw new ApiError(404, 'Task no longer exists');
         }
 
-        if (task.assignees.map((a: ObjectId) => a.toString()).includes(assigneeId)) {
-            throw new ApiError(400, 'Task is already assigned to this user');
+        if (task.assignee) {
+            throw new ApiError(400, 'Task is already assigned');
         }
 
         const [workspaceMember, projectMember] = await Promise.all([
@@ -277,22 +292,26 @@ class TaskService {
             }
         }
 
-        task.assignees.push(assigneeId);
-        task.isPersonal = false;
-
-        const updatedTask = await task.save();
+        const updatedTask = await Task.findByIdAndUpdate(ctx.taskId, {
+            $set: {
+                assignee: assigneeId,
+                isPrivate: false,
+                lastModifiedAt: new Date(),
+                lastModifiedBy: ctx.userId
+            }
+        }, { new: true, runValidators: true }).lean().exec();
 
         if (!updatedTask) {
             throw new ApiError(500, 'Failed to assign task. Please try again later');
         }
 
-        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'assign', ctx.userId, `Task assigned to user with ID ${assigneeId}`)
         return {
             status: 200,
             message: 'Task assigned successfully',
             data: updatedTask
         }
     }
+
     async unassignTask(ctx: TaskContext, { assigneeId }: AssignTaskInput) {
         if (!canAssignTasks(ctx.userRole)) {
             throw new ApiError(403, 'Forbidden: You do not have permission to unassign tasks');
@@ -302,27 +321,34 @@ class TaskService {
             _id: ctx.taskId,
             projectId: ctx.projectId,
             workspaceId: ctx.workspaceId
-        });
+        }).select('assignee').lean().exec();
 
         if (!task) {
             throw new ApiError(404, 'Task no longer exists');
         }
 
-        if (task.assignees.length === 0) {
+        if (!task.assignee) {
             throw new ApiError(400, 'No assignee to unassign from this task');
         }
 
-        task.assignees = task.assignees.filter((id: ObjectId) => id.toString() !== assigneeId);
-        if (task.assignees.length === 0) {
-            task.isPersonal = true;
+        const updatedTask = await Task.findOneAndUpdate({
+            _id: ctx.taskId,
+            assignee: assigneeId,
         }
-
-        const updatedTask = await task.save();
+            , {
+                $set: {
+                    assignee: null,
+                    isPrivate: true,
+                    lastModifiedAt: new Date(),
+                    lastModifiedBy: ctx.userId
+                }
+            },
+            { new: true, runValidators: true }).lean().exec()
 
         if (!updatedTask) {
             throw new ApiError(404, 'Task not found, no assignee to unassign, or no longer exists');
         }
-        await performAudit(ctx.workspaceId, 'task', updatedTask._id.toString(), 'unassign', ctx.userId, `Task unassigned from user with ID ${assigneeId}`)
+
         return {
             status: 200,
             message: 'Task unassigned successfully',

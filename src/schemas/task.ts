@@ -25,7 +25,8 @@ export const updateTaskSchema = z.object({
 });
 
 export const toggleTaskStatusSchema = z.object({
-    status: z.enum(["todo", "in_progress", "review", "done", "blocked"], 'Task status could be either todo, in_progress, review, done or blocked')
+    status: z.enum(["todo", "in_progress", "review", "done", "blocked"], 'Task status could be either todo, in_progress, review, done or blocked'),
+    actualTime: z.coerce.number().min(0, "Actual time must be a non-negative number").optional()
 });
 
 export const assignTaskSchema = z.object({

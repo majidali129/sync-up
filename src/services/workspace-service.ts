@@ -2,80 +2,79 @@ import { Workspace } from "@/models/workspace-model";
 import { UpdateWorkspaceInput, CreateWorkspaceInput } from "@/schemas/workspace";
 import slugify from "slugify";
 import { WorkspaceMember } from "@/models/workspace-member";
-import { WorkspaceContext } from "@/types/workspace";
+import { IWorkspace, WorkspaceContext } from "@/types/workspace";
 import { config } from "@/config/env";
 import { ApiError } from "@/utils/api-error";
 import { canManageWorkspace } from "@/utils/permissions";
-import { performAudit } from "@/utils/perform-audit";
+import { withTransaction } from "@/utils/with-transaction";
+import { Project } from "@/models/project-model";
+import { Task } from "@/models/task-model";
+import { WorkspaceInvite } from "@/models/workspace-invites-model";
 
 
 class WorkspaceService {
     async createWorkspace(ctx: WorkspaceContext, data: CreateWorkspaceInput) {
-        //TODO: Use Transactions to ensure both workspace and workspace member are created successfully
         const slug = slugify(data.name);
         const existingWorkspace = await Workspace.exists({ slug }).lean().exec();
         if (existingWorkspace) {
             throw new ApiError(400, 'Workspace with the same name already exists. Please choose a different name.');
         }
-        const newWorkspace = await Workspace.create({
-            ...data,
-            slug,
-            ownerId: ctx.userId,
-        });
 
-        if (!newWorkspace) {
-            throw new ApiError(500, 'Failed to create workspace');
-        }
+        return withTransaction(async (session) => {
+            const [newWorkspace] = await Workspace.create([{
+                ...data,
+                slug,
+                ownerId: ctx.userId,
+            }], { session });
 
-        const workspaceMember = await WorkspaceMember.create({
-            workspaceId: newWorkspace._id,
-            userId: ctx.userId,
-            role: 'owner',
-            joinedAt: new Date()
-        });
+            if (!newWorkspace) {
+                throw new ApiError(500, 'Failed to create workspace');
+            }
 
-        if (!workspaceMember) {
-            throw new ApiError(500, 'Failed to create workspace member');
-        }
+            const workspaceMember = await WorkspaceMember.create([{
+                workspaceId: newWorkspace._id,
+                userId: ctx.userId,
+                role: 'owner',
+                joinedAt: new Date()
+            }], { session });
 
-        await Promise.all([
-            performAudit(ctx.workspaceId, 'workspace', newWorkspace._id.toString(), 'created', ctx.userId, `Workspace titled "${newWorkspace.name}" was created`),
-            performAudit(ctx.workspaceId, 'member', workspaceMember._id.toString(), 'member_added', ctx.userId, `Member with ID "${workspaceMember.userId}" was added as owner to the workspace`)
-        ])
-
-        return {
-            status: 201,
-            message: 'Workspace created successfully',
-            data: newWorkspace
-        }
+            if (!workspaceMember) {
+                throw new ApiError(500, 'Failed to create workspace member');
+            }
+            return {
+                status: 201,
+                message: 'Workspace created successfully',
+                data: newWorkspace
+            }
+        })
 
     }
 
     async updateWorkspace(ctx: WorkspaceContext, data: UpdateWorkspaceInput) {
         const workspace = await Workspace.findOne({
             _id: ctx.workspaceId,
-        }).select('_id slug ownerId name description icon settings updatedAt').exec();
+        }).select('slug ownerId').lean<Pick<IWorkspace, 'slug' | 'ownerId'>>().exec();
 
         if (!workspace) {
             throw new ApiError(404, 'Workspace not found');
         };
+
         if (!canManageWorkspace(ctx.workspaceId, workspace.ownerId.toString())) {
             throw new ApiError(403, 'You are not authorized to update this workspace');
         }
-
-        workspace.slug = data.name ? slugify(data.name) : workspace.slug;
-        workspace.name = data.name || workspace.name;
-        workspace.description = data.description || workspace.description;
-        workspace.icon = data.icon || workspace.icon;
-        workspace.settings = data.settings || workspace.settings;
-        workspace.updatedAt = new Date();
-
-        const updatedWorkspace = await workspace.save({ validateBeforeSave: true });
+        const updatedWorkspace = await Workspace.findByIdAndUpdate(ctx.workspaceId, {
+            $set: {
+                ...data,
+                slug: data.name ? slugify(data.name) : workspace.slug,
+                updatedAt: new Date()
+            }
+        }, {
+            new: true, runValidators: true
+        })
 
         if (!updatedWorkspace) {
             throw new ApiError(500, 'Failed to update workspace');
         }
-        await performAudit(ctx.workspaceId, 'workspace', updatedWorkspace._id.toString(), 'updated', ctx.userId, `Workspace titled "${updatedWorkspace.name}" was updated`)
 
         return {
             status: 200,
@@ -88,7 +87,7 @@ class WorkspaceService {
 
         const workspace = await Workspace.findOne({
             _id: ctx.workspaceId, ownerId: ctx.userId
-        });
+        }).select('ownerId').lean<Pick<IWorkspace, 'ownerId'>>().exec();
         if (!workspace) {
             throw new ApiError(404, 'Workspace not found');
         }
@@ -97,27 +96,22 @@ class WorkspaceService {
             throw new ApiError(403, 'You are not authorized to delete this workspace');
         }
 
-        //TODO: Use Transactions to ensure all related data is deleted successfully
-        // DELETE PROJECTS
-        // DELETE TASKS
-        // DELETE WORKSPACE INVITATIONS
-        // DELETE WORKSPACE MEMBERS
-        // await WorkspaceMember.deleteMany({
-        //     workspaceId: ctx.workspaceId
-        // });
-        // FINALLY DELETE WORKSPACE
-        const result = await workspace.deleteOne({ _id: ctx.workspaceId })
-        if (result.deletedCount === 0) {
-            throw new ApiError(500, 'Failed to delete workspace');
-        }
-
-        await performAudit(ctx.workspaceId, 'workspace', workspace._id.toString(), 'deleted', ctx.userId, `Workspace titled "${workspace.name}" was deleted`)
-
-        return {
-            status: 200,
-            message: 'Workspace deleted successfully',
-            data: null
-        }
+        return withTransaction(async (session) => {
+            // 1. Delete ALL PROJECTS, TASKS, INVITES, MEMBERS ASSOCIATED WITH THIS WORKSPACE
+            await Promise.all([
+                Project.deleteMany({ workspaceId: ctx.workspaceId }, { session }),
+                Task.deleteMany({ workspaceId: ctx.workspaceId }, { session }),
+                WorkspaceInvite.deleteMany({ workspaceId: ctx.workspaceId }, { session }),
+                WorkspaceMember.deleteMany({ workspaceId: ctx.workspaceId }, { session })
+            ]);
+            // 2. DELETE WORKSPACE
+            await Workspace.deleteOne({ _id: ctx.workspaceId }, { session });
+            return {
+                status: 200,
+                message: 'Workspace and all associated data deleted successfully',
+                data: null
+            };
+        })
     }
 
     async getWorkspaceDetails(ctx: WorkspaceContext) {

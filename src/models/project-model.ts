@@ -1,5 +1,5 @@
 import { IProject } from "@/types/project";
-import mongoose, { HydratedDocument, model, Schema } from "mongoose";
+import mongoose, { HydratedDocument, Model, model, Schema, Types } from "mongoose";
 
 type ProjectDocument = HydratedDocument<IProject>;
 
@@ -21,19 +21,19 @@ const projectSchema = new Schema<ProjectDocument>({
         trim: true,
     },
     workspaceId: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'Workspace',
         required: [true, 'Workspace ID is required'],
         index: true
     },
     createdBy: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'User',
         required: [true, 'Workspace admin or owner ID is required'],
     },
     members: [
         {
-            type: Schema.Types.ObjectId,
+            type: Types.ObjectId,
             ref: 'User',
         }
     ],
@@ -69,10 +69,10 @@ const projectSchema = new Schema<ProjectDocument>({
         default: null,
     }
     , lastModifiedBy: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'User',
         default: null,
     }
 }, { timestamps: true })
 
-export const Project = mongoose.models?.Project || model<ProjectDocument>('Project', projectSchema);
+export const Project = (mongoose.models?.Project as Model<ProjectDocument>) || model<ProjectDocument>('Project', projectSchema);

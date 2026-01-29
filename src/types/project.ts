@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 import { USER_ROLE } from "./user";
 
 export type ProjectStatus = 'active' | 'on-hold' | 'completed' | 'archived';
@@ -14,9 +14,9 @@ export interface IProject {
     name: string;
     slug: string;
     description?: string;
-    workspaceId: ObjectId;
-    createdBy: ObjectId;
-    members: ObjectId[];
+    workspaceId: Types.ObjectId
+    createdBy: Types.ObjectId;
+    members: Types.ObjectId[];
     icon?: string; // URL or EMOJI
     color?: string;
     status: ProjectStatus;
@@ -26,7 +26,7 @@ export interface IProject {
     stats: ProjectStats
     tags?: string[]
     lastModifiedAt?: Date;
-    lastModifiedBy?: ObjectId;
+    lastModifiedBy?: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }

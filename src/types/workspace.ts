@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 import { USER_ROLE } from "./user";
 
 
@@ -15,7 +15,7 @@ export interface IWorkspace {
     slug: string;
     description?: string;
     icon?: string;
-    ownerId: ObjectId;
+    ownerId: Types.ObjectId;
     settings: IWorkspaceSettings;
     projectsCount: number;
     membersCount: number;
@@ -27,8 +27,8 @@ export interface IWorkspace {
 
 
 export interface IWorkspaceMember {
-    userId: ObjectId;
-    workspaceId: ObjectId;
+    userId: Types.ObjectId;
+    workspaceId: Types.ObjectId;
     role: USER_ROLE;
     joinedAt: Date;
     createdAt: Date;
@@ -37,8 +37,8 @@ export interface IWorkspaceMember {
 
 export type INVITE_STATUS = 'pending' | 'accepted' | 'declined' | 'expired';
 export interface IWorkspaceInvite {
-    workspaceId: ObjectId;
-    invitedBy: ObjectId;
+    workspaceId: Types.ObjectId;
+    invitedBy: Types.ObjectId;
     role: 'admin' | 'member'
     email: string;
     token: string;
@@ -59,19 +59,4 @@ export interface WorkspaceInviteContext {
     email: string,
     fullName: string
     workspaceId?: string;
-}
-
-export interface IWorkspaceAuditLog {
-    workspaceId: ObjectId;
-    resourceType: 'project' | 'task' | 'member' | 'setting' | 'workspace';
-    resourceId: ObjectId;
-    action: 'created' | 'updated' | 'deleted' | 'joined' | 'left' | 'invited' | 'assign' | 'unassign' | 'member_added' | 'member_removed' | 'setting_changed';
-    performedBy: ObjectId;
-    // changes: {
-    //     field: string;
-    //     oldValue: any;
-    //     newValue: any;
-    // }[];
-    timestamp: Date;
-    ipAddress?: string;
 }

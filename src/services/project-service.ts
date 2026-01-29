@@ -8,7 +8,7 @@ import { Workspace } from "@/models/workspace-model";
 import slugify from "slugify";
 import { canManageProject, canViewProject } from "@/utils/permissions";
 import { Task } from "@/models/task-model";
-import { performAudit } from "@/utils/perform-audit";
+import { withTransaction } from '@/utils/with-transaction'
 
 
 class ProjectService {
@@ -21,11 +21,12 @@ class ProjectService {
         }
         const membersByDefault = [ctx.userId];
 
-        if (ctx.userRole === 'owner') {
-            const workspaceOwner = await Workspace.findById(ctx.workspaceId).select('ownerId').lean().exec();
-            if (workspaceOwner) {
-                membersByDefault.push(workspaceOwner.ownerId.toString());
-            }
+        const workspace = await Workspace.findById(ctx.workspaceId).select('ownerId').lean().exec();
+        if (!workspace) {
+            throw new ApiError(404, 'Workspace no longer exists');
+        }
+        if (ctx.userId !== workspace.ownerId.toString()) {
+            membersByDefault.push(workspace.ownerId.toString());
         }
 
         const project = await Project.create({
@@ -40,8 +41,6 @@ class ProjectService {
             throw new ApiError(500, 'Failed to create project. Please try again later');
         }
 
-        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'created', ctx.userId, `Project titled "${project.name}" was created`)
-
         return {
             status: 201,
             message: 'Project created successfully',
@@ -49,11 +48,7 @@ class ProjectService {
         }
     }
     async updateProject(ctx: ProjectContext, data: UpdateProjectInput) {
-        if (!ctx.isProjectMember) {
-            throw new ApiError(403, 'Forbidden: Only project members can update project details');
-        }
-
-        const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).exec();
+        const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).select('createdBy').exec();
         if (!project) {
             throw new ApiError(404, 'Project not found');
         };
@@ -62,53 +57,45 @@ class ProjectService {
             throw new ApiError(403, 'Not authorized to update this project');
         }
 
-        Object.assign(project, {
-            ...data,
-            lastModifiedAt: new Date(),
-            lastModifiedBy: ctx.userId
-        });
-        const updatedProject = await project.save({ validateBeforeSave: true });
+        const updatedProject = await Project.findByIdAndUpdate(project._id, {
+            $set: {
+                ...data,
+                lastModifiedAt: new Date(),
+                lastModifiedBy: ctx.userId
+            }
+        }, { new: true, runValidators: true }).lean().exec();
         if (!updatedProject) {
-            throw new ApiError(500, 'Failed to update project. Please try again later');
+            throw new ApiError(500, 'Update failed');
         }
-
-
-        await performAudit(ctx.workspaceId, 'project', updatedProject._id.toString(), 'updated', ctx.userId, `Project details updated`)
-
         return {
             status: 200,
             message: 'Project updated successfully',
             data: updatedProject
         }
     }
-    async deleteProject(ctx: ProjectContext) {
-        const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).exec();
 
+    async deleteProject(ctx: ProjectContext) {
+        const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).select('createdBy').lean().exec();
         if (!project) {
             throw new ApiError(404, 'Project not found');
         }
-
         if (!canManageProject(ctx.userId, ctx.userRole, project.createdBy.toString())) {
             throw new ApiError(403, 'Not authorized to delete');
         }
+        return withTransaction(async (session) => {
+            // 1. Deleted all tasks linked to this project;
+            await Task.deleteMany({ projectId: ctx.projectId }, { session });
+            // 2. Delete the project
+            await Project.deleteOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }, { session })
+            return {
+                status: 200,
+                message: 'Project deleted successfully',
+                data: null
+            }
 
-        const linkedTasks = await Task.exists({ projectId: project._id });
-        if (linkedTasks) {
-            throw new ApiError(400, 'Cannot delete project with existing tasks. Please delete all tasks associated with this project first.');
-        }
-
-        const deletedProject = await Project.deleteOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).exec();
-
-        if (deletedProject.deletedCount === 0) {
-            throw new ApiError(500, 'Failed to delete project. Please try again later');
-        }
-        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'deleted', ctx.userId, `Project titled "${project.name}" was deleted`)
-        return {
-            status: 200,
-            message: 'Project deleted successfully',
-            data: null
-        }
+        })
     }
+
     async getProjectDetails(ctx: ProjectContext) {
         if (!ctx.isProjectMember) {
             throw new ApiError(403, 'Forbidden: Only project members can view project details');
@@ -126,6 +113,16 @@ class ProjectService {
         if (!canViewProject(ctx.userRole, ctx.userId, project.visibility, project.createdBy.toString(), project.members)) {
             throw new ApiError(403, 'Not authorized to view this project');
         }
+
+        // TODO: get tasks , their stats 
+        /*
+        stats: {
+        totalTasks: number,
+        completedTasks: number,
+        inProgressTasks: number,
+        overdueTasks: number,
+    },
+        */
 
         return {
             status: 200,
@@ -204,9 +201,6 @@ class ProjectService {
             throw new ApiError(500, 'Failed to update project status. Please try again later');
         }
 
-        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'updated', ctx.userId, `Project status updated to ${status}`)
-
-
         return {
             status: 200,
             message: `Project status updated to ${status}`,
@@ -215,53 +209,47 @@ class ProjectService {
     }
 
     async addProjectMember(ctx: ProjectContext, targetUser: AddMemberToProjectInput) {
+        const [isMember, project] = await Promise.all([
+            WorkspaceMember.exists({ userId: targetUser.memberId, workspaceId: ctx.workspaceId }),
+            Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).select('createdBy members name').lean()
+        ]);
 
-        const isMember = await WorkspaceMember.exists({ userId: targetUser.memberId, workspaceId: ctx.workspaceId });
-        if (!isMember) {
-            throw new ApiError(400, 'The user you are trying to add is not a member of this workspace');
-        }
-
-        if (targetUser.memberId === ctx.userId) {
-            throw new ApiError(400, 'You cannot add yourself as a member to the project');
-        };
-
-        const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).select('members').exec();
-        if (!project) {
-            throw new ApiError(404, 'Project no longer exists');
-        }
-
+        if (!isMember) throw new ApiError(400, 'User not in workspace');
+        if (!project) throw new ApiError(404, 'Project not found');
         if (!canManageProject(ctx.userId, ctx.userRole, project.createdBy.toString())) {
-            throw new ApiError(403, 'Not authorized to add members to this project');
+            throw new ApiError(403, 'Not authorized');
         }
 
-        if (project.members.includes(targetUser.memberId)) {
-            throw new ApiError(400, 'The user is already a member of this project');
+        if (project.members.some(id => id.toString() === targetUser.memberId)) {
+            throw new ApiError(400, 'User is already a member');
         }
 
-        project.members.push(targetUser.memberId);
-        project.lastModifiedAt = new Date();
-        project.lastModifiedBy = ctx.userId;
-        const updatedProject = await project.save({ validateBeforeSave: false });
-        if (!updatedProject) {
-            throw new ApiError(500, 'Failed to add member to project. Please try again later');
-        }
+        const updatedProject = await Project.findOneAndUpdate(
+            { _id: ctx.projectId },
+            {
+                $addToSet: { members: targetUser.memberId }, // Atomic "Add if not exists"
+                $set: {
+                    lastModifiedAt: new Date(),
+                    lastModifiedBy: ctx.userId
+                }
+            },
+            { new: true, runValidators: false }
+        );
 
-        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'member_added', ctx.userId, `Member with ID ${targetUser.memberId} was added to the project`)
-
+        if (!updatedProject) throw new ApiError(500, 'Update failed');
         return {
             status: 200,
-            message: 'Member added to project successfully',
+            message: 'Member added successfully',
             data: updatedProject
-        }
-
+        };
     }
     async removeProjectMember(ctx: ProjectContext, targetUserId: string) {
-
         const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).select('members createdBy').exec();
 
         if (!project) {
             throw new ApiError(404, 'Project not found');
         };
+
 
         if (!canManageProject(ctx.userId, ctx.userRole, project.createdBy.toString())) {
             throw new ApiError(403, 'Not authorized to remove members from this project');
@@ -271,40 +259,49 @@ class ProjectService {
             throw new ApiError(400, 'Cannot remove project creator from project members');
         }
 
-        const updatedProject = await Project.findOneAndUpdate({
-            _id: ctx.projectId,
-            workspaceId: ctx.workspaceId
-        },
-            {
-                $pull: { members: targetUserId },
+        if (!project.members.some(id => id.toString() === targetUserId)) {
+            throw new ApiError(400, 'User is not a member of this project');
+        }
+
+        return withTransaction(async (session) => {
+
+            const updatedProject = await Project.findOneAndUpdate({
+                _id: ctx.projectId,
+                workspaceId: ctx.workspaceId
+            },
+                {
+                    $pull: { members: targetUserId },
+                    $set: {
+                        lastModifiedAt: new Date(),
+                        lastModifiedBy: ctx.userId
+                    }
+                },
+                { new: true, session }
+            ).lean().exec();
+
+            if (!updatedProject) throw new ApiError(500, 'Failed to update project');
+
+            // unassign all tasks assigned to this user in this project
+
+            await Task.updateMany({
+                projectId: ctx.projectId,
+                assignees: {
+                    $in: [targetUserId]
+                }
+            }, {
+                $pull: {
+                    assignees: targetUserId
+                },
                 lastModifiedAt: new Date(),
                 lastModifiedBy: ctx.userId
-            },
-            { new: true }
-        ).lean().exec();
+            }, { session });
 
-        if (!updatedProject) {
-            throw new ApiError(500, 'Failed to remove member from project. Please try again later');
-        }
-
-        // unassign all tasks assigned to this user in this project
-
-        await Task.updateMany({
-            projectId: ctx.projectId
-        }, {
-            $pull: {
-                assignees: targetUserId
-            },
-            lastModifiedAt: new Date(),
-            lastModifiedBy: ctx.userId
-        });
-
-        await performAudit(ctx.workspaceId, 'project', project._id.toString(), 'member_removed', ctx.userId, `Member with ID ${targetUserId} was removed from the project`)
-        return {
-            status: 200,
-            message: 'Member removed from project successfully',
-            data: updatedProject
-        }
+            return {
+                status: 200,
+                message: 'Member removed successfully',
+                data: updatedProject
+            };
+        })
     }
 
     async getProjectMembers(ctx: ProjectContext) {

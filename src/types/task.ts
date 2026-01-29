@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 import { USER_ROLE } from "./user";
 
 
@@ -25,27 +25,27 @@ export enum TaskStatus {
     ARCHIVED = "archived"
 }
 export interface ITask {
-    workspaceId: ObjectId;
-    projectId: ObjectId;
+    workspaceId: Types.ObjectId;
+    projectId: Types.ObjectId;
     title: string;
     slug: string;
     description?: string;
     type: TaskType;
     priority: TaskPriority;
     status: TaskStatus;
-    isPersonal?: boolean;
-    assignees?: ObjectId[];
-    creator: ObjectId;
+    isPrivate: boolean;
+    assignee?: Types.ObjectId;
+    creator: Types.ObjectId;
     estimatedTime: number; // minutes
     actualTime?: number;
     dueDate: Date;
     tags?: string[];
     completedAt?: Date;
-    parentTask?: ObjectId;
-    subtasks?: ObjectId[];
+    parentTask?: Types.ObjectId;
+    subtasks?: Types.ObjectId[];
     lastModifiedAt: Date;
-    lastModifiedBy?: ObjectId;
-    completedBy?: ObjectId;
+    lastModifiedBy?: Types.ObjectId;
+    completedBy?: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }

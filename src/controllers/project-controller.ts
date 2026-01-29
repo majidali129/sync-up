@@ -30,6 +30,7 @@ export const deleteProject = asyncHandler(async (req, res) => {
     const result = await projectService.deleteProject(getCtx(req));
     return apiResponse(res, result.status, result.message, result.data)
 })
+
 export const updateProjectStatus = asyncHandler(async (req, res) => {
     const result = await projectService.updateProjectStatus(getCtx(req), req.body as UpdateProjectStatusInput);
     return apiResponse(res, result.status, result.message, result.data)

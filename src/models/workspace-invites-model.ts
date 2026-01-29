@@ -1,17 +1,17 @@
 import { IWorkspaceInvite } from "@/types/workspace";
-import mongoose, { HydratedDocument, model, Schema } from "mongoose";
+import mongoose, { HydratedDocument, Model, model, Schema, Types } from "mongoose";
 
 
 type WorkspaceInviteDocument = HydratedDocument<IWorkspaceInvite>;
 const workspaceInviteSchema = new Schema<WorkspaceInviteDocument>({
     workspaceId: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'Workspace',
         required: [true, 'Workspace ID is required'],
         index: true
     },
     invitedBy: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: 'User',
         required: [true, 'Workspace owner ID is required']
     },
@@ -53,4 +53,4 @@ const workspaceInviteSchema = new Schema<WorkspaceInviteDocument>({
 
 
 
-export const WorkspaceInvite = mongoose.models?.WorkspaceInvite || model<WorkspaceInviteDocument>('WorkspaceInvite', workspaceInviteSchema);
+export const WorkspaceInvite = (mongoose.models?.WorkspaceInvite as Model<WorkspaceInviteDocument>) || model<WorkspaceInviteDocument>('WorkspaceInvite', workspaceInviteSchema);
