@@ -9,6 +9,7 @@ export const canManageProject = (userId: string, userRole: USER_ROLE, projectCre
     if (userRole === 'owner' || userId === projectCreatorId) return true;
     return false;
 };
+
 export const canEditTaskContent = (userRole: USER_ROLE, userId: string, taskCreatorId: string) => {
     if (userRole === 'owner' || userRole === 'admin') return true;
     if (userRole === 'member' && userId === taskCreatorId) return true;

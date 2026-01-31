@@ -1,5 +1,5 @@
 
-import { forgotPassword, getCurrentUser, resetPassword, signIn, signOut, signUp, updatePassword, verifyEmail } from "@/controllers/auth-controller";
+import { forgotPassword, getCurrentUser, refreshToken, resetPassword, signIn, signOut, signUp, updatePassword, verifyEmail } from "@/controllers/auth-controller";
 import { validateBody } from "@/middlewares/validate-request";
 import { verifyJWT } from "@/middlewares/verify-jwt";
 import { forgotPasswordSchema, resetPasswordSchema, signInSchema, signUpSchema, updatePasswordSchema } from "@/schemas/auth";
@@ -41,6 +41,7 @@ router.post('/verify-email', verifyEmail)
 router.post('/sign-in', signInLimiter, validateBody(signInSchema), signIn)
 router.post('/forgot-password', forgotPasswordLimiter, validateBody(forgotPasswordSchema), forgotPassword)
 router.post('/reset-password', validateBody(resetPasswordSchema), resetPassword)
+router.post('/refresh-token', refreshToken)
 router.use(verifyJWT);
 router.post('/update-password', validateBody(updatePasswordSchema), updatePassword)
 router.post('/sign-out', signOut)

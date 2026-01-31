@@ -148,9 +148,7 @@ class TaskService {
             findQuery.$or = [
                 { creator: ctx.userId },
                 {
-                    assignees: {
-                        $in: [ctx.userId]
-                    }
+                    assignee: ctx.userId
                 }
             ];
         }
@@ -253,12 +251,14 @@ class TaskService {
             throw new ApiError(403, 'Forbidden: You do not have permission to assign tasks');
         }
 
+        console.log(ctx)
         const task = await Task.findOne({
             _id: ctx.taskId,
             projectId: ctx.projectId,
             workspaceId: ctx.workspaceId
         });
 
+        console.log(task)
         if (!task) {
             throw new ApiError(404, 'Task no longer exists');
         }
@@ -312,7 +312,7 @@ class TaskService {
         }
     }
 
-    async unassignTask(ctx: TaskContext, { assigneeId }: AssignTaskInput) {
+    async unassignTask(ctx: TaskContext) {
         if (!canAssignTasks(ctx.userRole)) {
             throw new ApiError(403, 'Forbidden: You do not have permission to unassign tasks');
         }
@@ -333,7 +333,6 @@ class TaskService {
 
         const updatedTask = await Task.findOneAndUpdate({
             _id: ctx.taskId,
-            assignee: assigneeId,
         }
             , {
                 $set: {

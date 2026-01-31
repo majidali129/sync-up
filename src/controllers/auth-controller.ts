@@ -9,7 +9,7 @@ import { Request } from "express";
 const getCtx = (req: Request): UserContext => ({
     userId: req.user.id,
     email: req.user.email,
-    token: req.query.token as string
+    token: req.query?.token as string
 })
 
 export const signUp = asyncHandler(async (req, res) => {
@@ -22,7 +22,7 @@ export const signUp = asyncHandler(async (req, res) => {
 })
 
 export const verifyEmail = asyncHandler(async (req, res) => {
-    const result = await authService.verifyEmail(getCtx(req));
+    const result = await authService.verifyEmail(req.query as { token: string, userId: string });
     return apiResponse(res, result.status, result.message)
 })
 
@@ -50,7 +50,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     return apiResponse(res, result.status, result.message);
 })
 export const resetPassword = asyncHandler(async (req, res) => {
-    const result = await authService.resetPassword(getCtx(req), req.body as ResetPasswordInput)
+    const result = await authService.resetPassword(req.query.token as string, req.body as ResetPasswordInput)
     return apiResponse(res, result.status, result.message);
 })
 export const updatePassword = asyncHandler(async (req, res) => {

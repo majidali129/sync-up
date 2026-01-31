@@ -97,10 +97,6 @@ class ProjectService {
     }
 
     async getProjectDetails(ctx: ProjectContext) {
-        if (!ctx.isProjectMember) {
-            throw new ApiError(403, 'Forbidden: Only project members can view project details');
-        }
-
         const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).populate({
             path: 'createdBy',
             select: 'username email profilePhoto _id'
@@ -179,9 +175,6 @@ class ProjectService {
         }
     }
     async updateProjectStatus(ctx: ProjectContext, { status }: UpdateProjectStatusInput) {
-        if (!ctx.isProjectMember) {
-            throw new ApiError(403, 'Forbidden: Only project members can update project status');
-        }
         const project = await Project.findOne({ _id: ctx.projectId, workspaceId: ctx.workspaceId }).exec();
 
         if (!project) {

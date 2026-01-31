@@ -1,5 +1,5 @@
 import { CreateWorkspaceInput, UpdateWorkspaceInput } from "@/schemas/workspace";
-import workspaceService from "@/services/workspace-service";
+import { workspaceService } from "@/services/workspace-service";
 import { WorkspaceContext } from "@/types/workspace";
 import { apiResponse } from "@/utils/api-response";
 import { asyncHandler } from "@/utils/async-handler";

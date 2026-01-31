@@ -96,7 +96,7 @@ class WorkspaceInvitesService {
 
     async acceptInvite(ctx: WorkspaceInviteContext, { token }: AcceptInviteInput) {
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-        await withTransaction(async (session) => {
+        return withTransaction(async (session) => {
 
             const invite = await WorkspaceInvite.findOneAndUpdate({
                 token: hashedToken,

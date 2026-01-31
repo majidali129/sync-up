@@ -3,7 +3,7 @@ import { validateBody } from "@/middlewares/validate-request";
 import { verifyJWT } from "@/middlewares/verify-jwt";
 import { verifyProjectMembership } from "@/middlewares/verify-project-membership";
 import { verifyWorkspaceOwnerShip } from "@/middlewares/verify-workspace-ownership";
-import { assignTaskSchema, createTaskSchema, toggleTaskStatusSchema, updateTaskSchema } from "@/schemas/task";
+import { assignTaskSchema, createTaskSchema, toggleTaskStatusSchema, unassignTaskSchema, updateTaskSchema } from "@/schemas/task";
 import { Router } from "express";
 
 

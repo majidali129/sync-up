@@ -33,7 +33,12 @@ export const assignTaskSchema = z.object({
     assigneeId: z.string().min(1, "Assignee ID is required")
 });
 
+export const unassignTaskSchema = z.object({
+    assigneeId: z.string().min(1, "Assignee ID is required")
+});
+
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskInput = Partial<CreateTaskInput>;
 export type ToggleTaskStatusInput = z.infer<typeof toggleTaskStatusSchema>;
 export type AssignTaskInput = z.infer<typeof assignTaskSchema>;
+export type UnassignTaskInput = z.infer<typeof unassignTaskSchema>;

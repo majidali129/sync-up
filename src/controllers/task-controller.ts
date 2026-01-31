@@ -1,4 +1,4 @@
-import { AssignTaskInput, assignTaskSchema, CreateTaskInput, createTaskSchema, ToggleTaskStatusInput, toggleTaskStatusSchema, UpdateTaskInput, updateTaskSchema } from "@/schemas/task";
+import { AssignTaskInput, CreateTaskInput, ToggleTaskStatusInput, UnassignTaskInput, UpdateTaskInput, updateTaskSchema } from "@/schemas/task";
 import { taskService } from "@/services/task-service";
 import { TaskContext } from "@/types/task";
 import { apiResponse } from "@/utils/api-response";
@@ -46,6 +46,6 @@ export const assignTask = asyncHandler(async (req, res) => {
     return apiResponse(res, result.status, result.message, result.data);
 });
 export const unassignTask = asyncHandler(async (req, res) => {
-    const result = await taskService.unassignTask(getCtx(req), req.body as AssignTaskInput);
+    const result = await taskService.unassignTask(getCtx(req));
     return apiResponse(res, result.status, result.message, result.data);
 });

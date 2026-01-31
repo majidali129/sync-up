@@ -30,6 +30,6 @@ export const getWorkspaceInvites = asyncHandler(async (req, res) => {
 
 
 export const getGlobalInvites = asyncHandler(async (req, res) => {
-    const result = await workspaceInvitesService.getGlobalInvites(getCtx(req));
+    const result = await workspaceInvitesService.getGlobalInvites(getCtx(req), req.query);
     return apiResponse(res, result.status, result.message, result.data);
 })

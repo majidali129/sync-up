@@ -59,7 +59,7 @@ class WorkspaceService {
             throw new ApiError(404, 'Workspace not found');
         };
 
-        if (!canManageWorkspace(ctx.workspaceId, workspace.ownerId.toString())) {
+        if (!canManageWorkspace(ctx.userId, workspace.ownerId.toString())) {
             throw new ApiError(403, 'You are not authorized to update this workspace');
         }
         const updatedWorkspace = await Workspace.findByIdAndUpdate(ctx.workspaceId, {
@@ -84,7 +84,6 @@ class WorkspaceService {
     }
 
     async deleteWorkspace(ctx: WorkspaceContext) {
-
         const workspace = await Workspace.findOne({
             _id: ctx.workspaceId, ownerId: ctx.userId
         }).select('ownerId').lean<Pick<IWorkspace, 'ownerId'>>().exec();
@@ -92,7 +91,7 @@ class WorkspaceService {
             throw new ApiError(404, 'Workspace not found');
         }
 
-        if (!canManageWorkspace(ctx.workspaceId, workspace.ownerId.toString())) {
+        if (!canManageWorkspace(ctx.userId, workspace.ownerId.toString())) {
             throw new ApiError(403, 'You are not authorized to delete this workspace');
         }
 
@@ -172,5 +171,4 @@ class WorkspaceService {
     }
 }
 
-const workspaceService = new WorkspaceService();
-export default workspaceService;
+export const workspaceService = new WorkspaceService();

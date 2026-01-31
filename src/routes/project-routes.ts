@@ -17,35 +17,28 @@ router.use(verifyJWT);
 
 router.route('/').post(verifyWorkspaceOwnerShip(['owner', 'admin']), validateBody(createProjectSchema), createProject).get(verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjects);
 
-router.get('/:id', verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), verifyProjectMembership, getProjectDetails)
+router.get('/:projectId', verifyWorkspaceOwnerShip(['owner', 'admin', 'member']), getProjectDetails)
 
-router.post('/:id/members',
+router.post('/:projectId/members',
     verifyWorkspaceOwnerShip(['owner', 'admin']),
     validateBody(addMemberToProjectSchema),
     addProjectMember
 );
 
-router.delete('/:id/members/:memberId',
+router.delete('/:projectId/members/:memberId',
     verifyWorkspaceOwnerShip(['owner', 'admin']),
     removeProjectMember
 );
 
-router.get('/:id/members',
+router.get('/:projectId/members',
     verifyWorkspaceOwnerShip(['owner', 'admin', 'member']),
     getProjectMembers
 );
 
 router.use(verifyWorkspaceOwnerShip(['owner', 'admin']))
-router.route('/:id').patch(validateBody(updateProjectSchema), updateProject).delete(deleteProject);
-router.route('/:id/status').patch(verifyProjectMembership, validateBody(updateProjectStatusSchema), updateProjectStatus);
+router.route('/:projectId').patch(validateBody(updateProjectSchema), updateProject).delete(deleteProject);
+router.route('/:projectId/status').patch(validateBody(updateProjectStatusSchema), updateProjectStatus);
 
 
 export { router as projectRouter }
 export default router;
-
-/*
-! Who can do THIS: addMembersToWorkspace | updateWorkspaceSettings => only ( owner )
-! Who can do THIS:  create/edit/delete project | updateProjectStatus | addOrRemoveMembersToAndFromProject |assignOrUnassignTaskToProjectMember => only  ( owner | admin )
-! Admin can assign task to (role) member only 
-! Owner can assign task to (role) admin | member 
-*/

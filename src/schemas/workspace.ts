@@ -21,6 +21,8 @@ export const createWorkspaceSchema = z.object({
     })
 });
 
+export const updateWorkspaceSchema = createWorkspaceSchema.partial();
+
 
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
-export type UpdateWorkspaceInput = Partial<CreateWorkspaceInput>;
+export type UpdateWorkspaceInput = z.infer<typeof updateWorkspaceSchema>;

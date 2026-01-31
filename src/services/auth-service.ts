@@ -76,9 +76,9 @@ class AuthService {
 
     }
 
-    async verifyEmail(ctx: UserContext) {
-        const hashedToken = crypto.createHash('sha256').update(ctx.token).digest('hex');
-        const user = await User.findById(ctx.userId).select('isEmailVerified emailVerificationToken emailVerificationTokenExpires');
+    async verifyEmail(query: { token: string, userId: string }) {
+        const hashedToken = crypto.createHash('sha256').update(query.token).digest('hex');
+        const user = await User.findById(query.userId).select('isEmailVerified emailVerificationToken emailVerificationTokenExpires');
         if (!user) {
             throw new ApiError(404, 'User account not found');
         }
@@ -178,9 +178,9 @@ class AuthService {
         }
 
     }
-    async resetPassword(ctx: UserContext, { newPassword }: ResetPasswordInput) {
+    async resetPassword(token: string, { newPassword }: ResetPasswordInput) {
 
-        const hashedToken = crypto.createHash('sha256').update(ctx.token).digest('hex');
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
         const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetTokenExpires: { $gt: Date.now() } }).select('password _id passwordResetToken passwordResetTokenExpires passwordChangedAt passwordResetTokenIssuedAt').exec();
         if (!user) throw new ApiError(404, 'Token is invalid or has expired');
@@ -229,8 +229,6 @@ class AuthService {
         if (!user) throw new ApiError(404, 'User not found');
         return user;
     }
-
-    //TODO: refresh token logic
     async refreshToken(refreshToken: string) {
         if (!refreshToken) {
             throw new ApiError(401, 'Unauthorized Access. Please log in again')
