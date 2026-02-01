@@ -118,16 +118,6 @@ curl -X POST http://localhost:8000/api/workspaces \
   }'
 ```
 
-## 📚 Documentation
-
-| Document | Purpose | Time |
-
-|----------|---------|------|
-| [API Documentation](docs/API.md) | All endpoints with examples | 25 min |
-| [Architecture Guide](docs/ARCHITECTURE.md) | System design and data flow| 10 min |
-| [Database Schema](docs/DATABASE_SCHEMA.md) | Collections and relationships | 8 min |
-| [Roles & Permissions](docs/DATABASE_SCHEMA.md) | Permission matrix by role | 7 min |
-
 ## 🎭 Role-Based System
 
 ### Owner
@@ -159,8 +149,7 @@ curl -X POST http://localhost:8000/api/workspaces \
 ## 🏗️ Tech Stack
 
 | Layer | Technology |
-
-|-------|------------|
+| ------- | ------------ |
 | **Runtime** | Node.js |
 | **Language** | Typescript |
 | **Framework** | Express.js |
