@@ -3,7 +3,8 @@
 A production ready, multi-tenant collaborative project management backend system with role based access control, real time features.
 
 ## ✨ Features
-- **🏢 Multi-tenant Architecture** - Complete workspace isolation. Each team has their own separate workspace. 
+
+- **🏢 Multi-tenant Architecture** - Complete workspace isolation. Each team has their own separate workspace.
 - **🔐 Role-Based Access Control** - Three roles ( Owner, Admin, Member ) with granular permissions.
 - **📊 Project Management** - Create and manage projects with public / private visibility.
 - **📝 Task Management** - Assign task to project members and track status through workflow.
@@ -16,13 +17,14 @@ A production ready, multi-tenant collaborative project management backend system
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18 or higher
-- Mongodb Atlas 
+- Mongodb Atlas
 - Pnpm latest
 
 ### Installation
 
-``` bash 
+``` bash
 # Clone the repository 
 git clone https://github.com/majidali129/sync-up.git
 cd sync-up
@@ -35,7 +37,8 @@ cp .env.example .env
 ```
 
 **Edit `.env` with your database url:**
-```env 
+
+```env
 PORT=8000
 NODE_ENV=development
 DATABASE_URI=
@@ -62,7 +65,8 @@ CLOUDINARY_API_SECRET=
 ```
 
 ### Running Locally
-```bash 
+
+```bash
 # Dev server ( with auto reload )
 pnpm run dev
 
@@ -77,7 +81,8 @@ Server runs at: `http://localhost:8000`
 
 ### First API Call
 
-**1. Create an account:** 
+**1. Create an account:**
+
 ```bash
 curl -X POST http://localhost:8000/auth/sign-up \
     -H "Content-Type: application/json" \
@@ -90,7 +95,8 @@ curl -X POST http://localhost:8000/auth/sign-up \
 ```
 
 **2. Sign in:**
-```bash 
+
+```bash
 curl -X POST http://localhost:8000/auth/sign-in \
     -H "Content-Type: application/json" \
     -d `{
@@ -100,6 +106,7 @@ curl -X POST http://localhost:8000/auth/sign-in \
 ```
 
 **3. Create a workspace:**
+
 ```bash
 curl -X POST http://localhost:8000/api/workspaces \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -112,12 +119,14 @@ curl -X POST http://localhost:8000/api/workspaces \
 ```
 
 ## 📚 Documentation
+
 | Document | Purpose | Time |
+
 |----------|---------|------|
 | [API Documentation](docs/API.md) | All endpoints with examples | 25 min |
 | [Architecture Guide](docs/ARCHITECTURE.md) | System design and data flow| 10 min |
 | [Database Schema](docs/DATABASE_SCHEMA.md) | Collections and relationships | 8 min |
-| [Roles & Permissions](docs/DATABASE_SCHEMA.md) | Permission metrix by role | 7 min |
+| [Roles & Permissions](docs/DATABASE_SCHEMA.md) | Permission matrix by role | 7 min |
 
 ## 🎭 Role-Based System
 
@@ -148,29 +157,31 @@ curl -X POST http://localhost:8000/api/workspaces \
 - Cannot assign tasks
 
 ## 🏗️ Tech Stack
+
 | Layer | Technology |
+
 |-------|------------|
 | **Runtime** | Node.js |
 | **Language** | Typescript |
 | **Framework** | Express.js |
 | **Database** | MongoDB |
 | **Auth** | JWT ( jose ) |
-| **Passwork** | Bcrypt |
-| **Validatin** | Zod |
+| **Password** | Bcrypt |
+| **Validation** | Zod |
 | **Email** | Resend |
 | **Security** | Helmet |
 | **Rate Limit** | Express-rate-limit |
 
-
 ## 📊 System Architecture
-```
+
+```text
                 Client ( Frontend )
                         ↓ HTTP + JWT
                 API Server ( Express )
                         ↓
         Authentication Middleware ( JWT verification )
                         ↓
-        Workspace Membership Middlware ( Role check )
+        Workspace Membership Middleware ( Role check )
                         ↓
             Authorization Check ( Permissions )
                         ↓
@@ -188,7 +199,6 @@ curl -X POST http://localhost:8000/api/workspaces \
 - **Task** - Tasks within projects
 - **WorkspaceInvites** - Invite management with tokens
 
-
 ## 🧪 Testing
 
 ```bash
@@ -199,9 +209,7 @@ pnpm test
 pnpm test:coverage
 ```
 
-## 👤 Author
-
-**Majid Ali**
+## 👤 Author **Majid Ali**
 
 - Github: [@majidali129](https://github.com/majidali129)
 - Email: <majidaliofficial129@gmail.com>
@@ -209,9 +217,7 @@ pnpm test:coverage
 
 ## 📞 Support
 
-
 - **Issues**: [GitHub Issues](https://github.com/majidali129/sync-up/issues)
 - **Email**: <majidaliofficial129@gmail.com>
 - **Documentation**: [Full Docs](docs/)
-
 **Made with 💛 by Majid Ali**

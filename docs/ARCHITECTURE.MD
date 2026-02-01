@@ -1,11 +1,12 @@
 # System Architecture
 
 ## Overview
+
 Sync-UP is a **Multi-tenant, role-based project/task management system** with Express.js and MongoDB.
 
 ## Core Responsibilities
 
-- **User Management**: Registeration, authentication/authorization.
+- **User Management**: Registration, authentication/authorization.
 - **Workspace Management**: Multi-tenant workspaces with fully isolated data.
 - **Project Management**: Projects within the workspace with member access control.
 - **Task Management**: Tasks management within the projects with assignments and status tracking.
@@ -15,10 +16,8 @@ Sync-UP is a **Multi-tenant, role-based project/task management system** with Ex
 ## Architecture Layers
 
 ### Three Layer Architecture
-```
-Image goes here
-```
 
+![alt](./images/architecture-sync-up.png)
 
 ### Layer Responsibilities
 
@@ -34,7 +33,7 @@ Image goes here
   - `task-routes.ts` - Task endpoints
   - `workspace-invites-routes.ts` - Workspace invites
 
-```
+```bash
 
 #### Controllers Layer
 
@@ -81,28 +80,34 @@ Image goes here
 ## Authorization Strategy
 
 ### Layer 1: Authentication Check
+
 - Validates JWT access token
 - Returns 401 if invalid
 
 ### Layer 2: Workspace Membership
+
 - Checks user belongs to workspace
 - Returns 403 if not member
 
 ### Layer 3: Role-Based Access
+
 - Owner: Full workspace control
 - Admin: Project-level control (own projects only)
 - Member: Read-only + assigned tasks
 
 ### Layer 4: Resource Ownership
+
 - Service-level checks for creator/assignee
 - Enforced in workspace/project/task services
 
 ## Multi-Tenancy Design
+
 - Workspace-level isolation
 - Every query scoped by workspace
 - Prevents cross-workspace data leakage
 
 ## Key Design Decisions
+
 - **Why JWT refresh tokens in DB?** Token revocation capability
 - **Why middleware layers?** Separation of concerns, reusable checks
 - **Why workspace scoping in every collection?** Data isolation guarantee
@@ -112,7 +117,7 @@ Image goes here
 
 ### Error Handling Architecture
 
-```
+```text
 ┌──────────────────────────────────┐
 │  Route Handler (async)           │
 └────────┬─────────────────────────┘
@@ -145,7 +150,6 @@ Image goes here
 │  Send JSON error response        │
 └──────────────────────────────────┘
 ```
-
 
 ### Error Classes
 
@@ -222,7 +226,8 @@ router.post('/projects',
 ```
 
 ### Global Error Handling Middleware
-```
+
+```typescript
 export const globalErrorHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
